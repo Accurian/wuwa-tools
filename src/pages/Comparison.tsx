@@ -285,16 +285,16 @@ export function Comparison() {
                   const maxEntry = chartEntries.entries[0]?.val ?? 0.01
                   const colorForBar = getQualityColor((entry.val / Math.max(maxEntry, 0.01)) * 100)
                   return (
-                    <div key={entry.name} className="flex h-[18px] items-center gap-1.5">
-                      <span className="w-9 shrink-0 truncate text-right text-faint">{getDisplay(entry.name)}</span>
-                      <div className="h-2.5 flex-1 overflow-hidden rounded bg-white/5">
+                    <div key={entry.name} className="flex h-4 items-center gap-2">
+                      <span className="w-[60px] shrink-0 text-right text-xs text-muted">{getDisplay(entry.name)}</span>
+                      <div className="h-2 flex-1 overflow-hidden rounded bg-white/5">
                         <div
                           className="h-full rounded"
                           style={{ width: `${pct}%`, background: colorForBar, transition: 'width .4s', minWidth: 2 }}
                         />
                       </div>
                       <span
-                        className="w-9 shrink-0 text-right text-faint"
+                        className="w-12 shrink-0 text-right text-xs tabular-nums"
                         style={color ? { color } : undefined}
                       >
                         {entry.val.toFixed(2)}
