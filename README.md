@@ -1,6 +1,8 @@
 # wuwa-tools
 
-Community calculators for **Wuthering Waves** Echo planning, deployed on [Vercel](https://vercel.com/). Everything runs entirely in the browser — no data collected, no tracking.
+Tools for **Wuthering Waves**, deployed on [Vercel](https://vercel.com/). Everything runs entirely in the browser — no data collected, no tracking.
+
+<https://wuwa-tools-self.vercel.app/>
 
 ## Tools
 
@@ -56,7 +58,3 @@ The project is configured for [Vercel](https://vercel.com/). Connect the GitHub 
 - A custom domain can be attached at the root (no sub-path needed).
 
 There is no GitHub Actions workflow — deployment is handled entirely by Vercel.
-
-## Live site
-
-<https://wuwa-tools.vercel.app/>
