@@ -31,7 +31,7 @@ export function Sidebar({
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col border-r border-border bg-surface transition-all duration-200 ${
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col border-r border-border bg-chrome transition-all duration-200 ${
           open
             ? 'w-64 translate-x-0'
             : 'w-14 -translate-x-full md:translate-x-0'
