@@ -120,7 +120,7 @@ function SubstatCard({
         maxed
           ? 'cursor-default border-border bg-surface opacity-50'
           : selected
-            ? 'border-teal bg-gradient-to-br from-teal/10 to-transparent shadow-[0_0_12px_rgba(0,212,255,0.12)]'
+            ? 'border-teal bg-gradient-to-br from-teal/10 to-transparent shadow-[0_0_14px_rgba(79,195,196,0.16)]'
             : 'cursor-pointer border-border bg-surface hover:border-info hover:bg-surface-2'
       }`}
     >
@@ -208,37 +208,36 @@ function RangeSlider({
       onClick={(e) => e.stopPropagation()}
       className={disabled ? 'pointer-events-none opacity-50' : ''}
     >
-      <div className="relative h-4 select-none">
+      <div className="relative h-5 select-none">
         <div
           ref={trackRef}
-          className="absolute left-1 right-1 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-bg"
+          className="absolute left-0 right-0 top-1/2 h-[2px] -translate-y-1/2 rounded-full bg-white/10"
         />
         <div
-          className="absolute top-1/2 h-[3px] -translate-y-1/2 rounded-full"
+          className="absolute top-1/2 h-[2px] -translate-y-1/2 rounded-full bg-gradient-to-r from-teal to-accent shadow-[0_0_8px_rgba(79,195,196,0.35)]"
           style={{
             left: pct(minIdx),
             width: `calc(${pct(maxIdx)} - ${pct(minIdx)})`,
-            background: 'linear-gradient(90deg, #0088cc, #00d4ff)',
           }}
         />
         <div
-          className="vs-thumb absolute top-1/2 z-10 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full border-2 border-white bg-teal shadow-[0_0_5px_rgba(0,212,255,0.4)]"
+          className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.5)] transition-transform active:scale-110"
           style={{ left: pct(minIdx) }}
           {...thumbHandlers(true)}
         />
         <div
-          className="vs-thumb absolute top-1/2 z-10 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full border-2 border-white bg-teal shadow-[0_0_5px_rgba(0,212,255,0.4)]"
+          className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.5)] transition-transform active:scale-110"
           style={{ left: pct(maxIdx) }}
           {...thumbHandlers(false)}
         />
       </div>
 
-      <div className="pointer-events-none mt-1 flex justify-between px-0.5">
+      <div className="pointer-events-none mt-1 flex justify-between">
         {values.map((v, i) => (
           <span
             key={i}
-            className={`text-[0.55rem] leading-tight tabular-nums ${
-              i >= minIdx && i <= maxIdx ? 'font-semibold text-teal' : 'text-faint'
+            className={`text-[0.6rem] tabular-nums transition-colors ${
+              i >= minIdx && i <= maxIdx ? 'font-semibold text-teal' : 'text-faint/70'
             }`}
           >
             {format(v)}

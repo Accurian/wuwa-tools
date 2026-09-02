@@ -10,14 +10,14 @@ const SV = [6.4, 7.1, 7.9, 8.6, 9.4, 10.1, 10.9, 11.6]
 const SP = [6.7961, 7.767, 20.3883, 24.2718, 17.4757, 14.5631, 5.8252, 2.9126]
 
 const DEF: { id: string; name: string; color: string }[] = [
-  { id: 'critRate', name: 'CRIT Rate', color: 'crit' },
-  { id: 'critDmg', name: 'CRIT DMG', color: 'critdmg' },
+  { id: 'critRate', name: 'Crit Rate', color: 'crit' },
+  { id: 'critDmg', name: 'Crit Damage', color: 'critdmg' },
   { id: 'atk', name: 'ATK%', color: 'atk' },
   { id: 'basicAtkDmg', name: 'Basic', color: 'basic' },
   { id: 'heavyAtkDmg', name: 'Heavy', color: 'heavy' },
   { id: 'skillDmg', name: 'Skill', color: 'skill' },
-  { id: 'liberationDmg', name: 'Lib', color: 'liberation' },
-  { id: 'energyRegen', name: 'ER', color: 'regen' },
+  { id: 'liberationDmg', name: 'Liberation', color: 'liberation' },
+  { id: 'energyRegen', name: 'Energy Regen', color: 'regen' },
   { id: 'hp', name: 'HP%', color: 'hp' },
   { id: 'def', name: 'DEF%', color: 'def' },
   { id: 'fixedAtk', name: 'Flat ATK', color: 'fixed' },
