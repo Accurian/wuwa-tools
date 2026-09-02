@@ -11,19 +11,19 @@ const TOOLS: ToolCard[] = [
   {
     href: href('comparison.html'),
     name: 'Echo Substat Comparison',
-    desc: 'Compare multiple echoes for specific resonators',
+    desc: 'Compare multiple echoes for specific resonators.',
     accent: 'gold',
   },
   {
     href: href('probability.html'),
     name: 'Echo Substat Calculator',
-    desc: 'Visualize the probability of getting a specific set of substats',
+    desc: 'Visualize the probability of getting a specific set of substats.',
     accent: 'teal',
   },
   {
     href: href('xp-tuners.html'),
     name: 'Echo Resources',
-    desc: 'Figure out how much XP and Tuners you can spend',
+    desc: 'Figure out how much XP and Tuners you can spend.',
     accent: 'accent',
   },
 ]
@@ -46,8 +46,8 @@ const ACCENT_STYLES: Record<ToolCard['accent'], { text: string; glow: string }> 
 export function Landing() {
   return (
     <div className="page-wrap pt-14 sm:pt-20">
-      <section className="mx-auto max-w-3xl text-center">
-        <h1 className="text-2xl font-semibold leading-snug tracking-tight sm:text-3xl">
+      <section className="text-center">
+        <h1 className="text-lg font-semibold leading-snug tracking-tight sm:text-xl lg:whitespace-nowrap">
           A collection of tools that I have created for{' '}
           <span className="font-bold text-gold">Wuthering Waves</span>.
         </h1>
