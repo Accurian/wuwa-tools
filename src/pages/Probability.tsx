@@ -37,95 +37,62 @@ const RESULT_COLORS: Record<string, string> = {
 export function Probability() {
   const [selected, setSelected] = useState<Record<string, boolean>>({})
   const [valueRanges, setValueRanges] = useState<Record<string, ValueRange>>({})
-  const [popover, setPopover] = useState<{ id: string; rect: DOMRect } | null>(null)
 
   const selectedCount = Object.keys(selected).length
   const isMaxed = selectedCount >= SLOTS
-
   const result = useMemo(() => calcProbability(selected, valueRanges), [selected, valueRanges])
 
   function toggleSelect(id: string) {
-    setSelected((prev) => {
-      if (prev[id]) {
+    if (selected[id]) {
+      setSelected((prev) => {
         const next = { ...prev }
         delete next[id]
         return next
-      }
-      if (Object.keys(prev).length >= SLOTS) return prev
-      const s = substatById(id)
-      setValueRanges((r) => {
-        if (s && s.values && !r[id]) return { ...r, [id]: { min: 0, max: s.values.length - 1 } }
-        return r
       })
-      return { ...prev, [id]: true }
-    })
-    setPopover(null)
-  }
-
-  function openSlider(id: string, rect: DOMRect) {
+      return
+    }
+    if (selectedCount >= SLOTS) return
     const s = substatById(id)
-    if (!s || !s.values) return
-    setPopover((prev) => {
-      if (prev && prev.id === id) return null
-      return { id, rect }
+    setValueRanges((r) => {
+      if (s && s.values && !r[id]) return { ...r, [id]: { min: 0, max: s.values.length - 1 } }
+      return r
     })
+    setSelected((prev) => ({ ...prev, [id]: true }))
   }
 
-  // close the popover on click outside / Escape
-  useEffect(() => {
-    if (!popover) return
-    function onClick(e: MouseEvent) {
-      if ((e.target as HTMLElement).closest('.substat-gear')) return
-      const el = document.querySelector('.value-popover')
-      if (el && el.contains(e.target as Node)) return
-      setPopover(null)
-    }
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') setPopover(null)
-    }
-    document.addEventListener('mousedown', onClick)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('mousedown', onClick)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [popover])
-
-  const popSubstat = popover ? substatById(popover.id) : null
+  function setRange(id: string, range: ValueRange) {
+    setValueRanges((prev) => ({ ...prev, [id]: range }))
+  }
 
   return (
     <div className="page-wrap pt-8">
-      <div className="grid items-start gap-4 lg:grid-cols-[1fr_300px]">
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {PROB_SUBSTATS.map((s) => (
-            <SubstatCard
-              key={s.id}
-              substat={s}
-              selected={!!selected[s.id]}
-              maxed={!selected[s.id] && isMaxed}
-              onToggle={() => toggleSelect(s.id)}
-              onGear={(rect) => {
-                if (!selected[s.id]) {
-                  if (selectedCount >= SLOTS) return
-                  toggleSelect(s.id)
-                }
-                openSlider(s.id, rect)
-              }}
-            />
-          ))}
-        </div>
+      <div className="grid items-start gap-4 lg:grid-cols-[1fr_320px]">
+        <section>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm text-muted">
+              Pick up to {SLOTS} substats, then drag the bar to set the roll range you&rsquo;ll accept.
+            </p>
+            <span className="chip bg-surface-3 text-text">
+              {selectedCount}/{SLOTS}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {PROB_SUBSTATS.map((s) => (
+              <SubstatCard
+                key={s.id}
+                substat={s}
+                selected={!!selected[s.id]}
+                maxed={!selected[s.id] && isMaxed}
+                range={valueRanges[s.id] || { min: 0, max: s.values.length - 1 }}
+                onToggle={() => toggleSelect(s.id)}
+                onRangeChange={(range) => setRange(s.id, range)}
+              />
+            ))}
+          </div>
+        </section>
 
         <ResultsPanel result={result} />
-
-        {popover && popSubstat && (
-          <ValuePopover
-            key={popSubstat.id}
-            substat={popSubstat}
-            range={valueRanges[popSubstat.id] || { min: 0, max: popSubstat.values.length - 1 }}
-            anchorRect={popover.rect}
-            onChange={(range) => setValueRanges((prev) => ({ ...prev, [popSubstat.id]: range }))}
-          />
-        )}
       </div>
     </div>
   )
@@ -135,41 +102,149 @@ function SubstatCard({
   substat,
   selected,
   maxed,
+  range,
   onToggle,
-  onGear,
+  onRangeChange,
 }: {
   substat: ProbSubstat
   selected: boolean
   maxed: boolean
+  range: ValueRange
   onToggle: () => void
-  onGear: (rect: DOMRect) => void
+  onRangeChange: (range: ValueRange) => void
 }) {
   return (
     <div
       onClick={onToggle}
-      className={`relative cursor-pointer select-none rounded-lg border p-3 transition-all ${
+      className={`rounded-xl border p-3 transition-all ${
         maxed
-          ? 'cursor-default border-border bg-surface opacity-40'
+          ? 'cursor-default border-border bg-surface opacity-50'
           : selected
             ? 'border-teal bg-gradient-to-br from-teal/10 to-transparent shadow-[0_0_12px_rgba(0,212,255,0.12)]'
-            : 'border-border bg-surface hover:border-info hover:bg-surface-2'
+            : 'cursor-pointer border-border bg-surface hover:border-info hover:bg-surface-2'
       }`}
     >
-      <div className="flex items-center justify-center gap-1.5">
-        <span className="h-[7px] w-[7px] rounded-full" style={{ background: COLOR_MAP[substat.color] }} />
-        <span className={`text-sm font-medium ${selected ? 'text-text' : 'text-muted'}`}>{substat.name}</span>
+      <div className="mb-2 flex items-center justify-center gap-2">
+        <span className="h-2 w-2 rounded-full" style={{ background: COLOR_MAP[substat.color] }} />
+        <span className={`text-sm font-medium ${selected ? 'text-text' : 'text-muted'}`}>
+          {substat.name}
+        </span>
       </div>
 
-      <button
-        className="substat-gear absolute bottom-1 right-1 flex h-5 w-5 items-center justify-center rounded p-0 text-xs leading-none text-muted opacity-40 transition-all hover:bg-surface-3 hover:opacity-100"
-        onClick={(e) => {
-          e.stopPropagation()
-          onGear(e.currentTarget.getBoundingClientRect())
-        }}
-        title="Select which roll values to accept"
-      >
-        ⚙
-      </button>
+      <RangeSlider
+        values={substat.values}
+        range={range}
+        onChange={onRangeChange}
+        format={(v) => valueLabel(substat, v)}
+        disabled={maxed}
+      />
+    </div>
+  )
+}
+
+function RangeSlider({
+  values,
+  range,
+  onChange,
+  format,
+  disabled,
+}: {
+  values: number[]
+  range: ValueRange
+  onChange: (range: ValueRange) => void
+  format: (v: number) => string
+  disabled?: boolean
+}) {
+  const N = values.length
+  const [minIdx, setMinIdx] = useState(range.min)
+  const [maxIdx, setMaxIdx] = useState(range.max)
+  const minRef = useRef(range.min)
+  const maxRef = useRef(range.max)
+  const trackRef = useRef<HTMLDivElement>(null)
+
+  function apply(mn: number, mx: number) {
+    minRef.current = mn
+    maxRef.current = mx
+    setMinIdx(mn)
+    setMaxIdx(mx)
+    onChange({ min: mn, max: mx })
+  }
+
+  const pct = (i: number) => `${(i / (N - 1)) * 100}%`
+
+  const thumbHandlers = (isLeft: boolean) => ({
+    onPointerDown: (e: React.PointerEvent) => {
+      if (disabled) return
+      e.preventDefault()
+      const move = (ev: PointerEvent) => {
+        const track = trackRef.current
+        if (!track) return
+        const rect = track.getBoundingClientRect()
+        let p = (ev.clientX - rect.left) / rect.width
+        p = Math.max(0, Math.min(1, p))
+        let idx = Math.round(p * (N - 1))
+        let mn = minRef.current
+        let mx = maxRef.current
+        if (isLeft) {
+          idx = Math.max(0, Math.min(mx - 1, idx))
+          mn = idx
+        } else {
+          idx = Math.min(N - 1, Math.max(mn + 1, idx))
+          mx = idx
+        }
+        apply(mn, mx)
+      }
+      const up = () => {
+        document.removeEventListener('pointermove', move)
+        document.removeEventListener('pointerup', up)
+      }
+      document.addEventListener('pointermove', move)
+      document.addEventListener('pointerup', up)
+    },
+  })
+
+  return (
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className={disabled ? 'pointer-events-none opacity-50' : ''}
+    >
+      <div className="relative h-4 select-none">
+        <div
+          ref={trackRef}
+          className="absolute left-1 right-1 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-bg"
+        />
+        <div
+          className="absolute top-1/2 h-[3px] -translate-y-1/2 rounded-full"
+          style={{
+            left: pct(minIdx),
+            width: `calc(${pct(maxIdx)} - ${pct(minIdx)})`,
+            background: 'linear-gradient(90deg, #0088cc, #00d4ff)',
+          }}
+        />
+        <div
+          className="vs-thumb absolute top-1/2 z-10 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full border-2 border-white bg-teal shadow-[0_0_5px_rgba(0,212,255,0.4)]"
+          style={{ left: pct(minIdx) }}
+          {...thumbHandlers(true)}
+        />
+        <div
+          className="vs-thumb absolute top-1/2 z-10 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full border-2 border-white bg-teal shadow-[0_0_5px_rgba(0,212,255,0.4)]"
+          style={{ left: pct(maxIdx) }}
+          {...thumbHandlers(false)}
+        />
+      </div>
+
+      <div className="pointer-events-none mt-1 flex justify-between px-0.5">
+        {values.map((v, i) => (
+          <span
+            key={i}
+            className={`text-[0.55rem] leading-tight tabular-nums ${
+              i >= minIdx && i <= maxIdx ? 'font-semibold text-teal' : 'text-faint'
+            }`}
+          >
+            {format(v)}
+          </span>
+        ))}
+      </div>
     </div>
   )
 }
@@ -177,7 +252,7 @@ function SubstatCard({
 function ResultsPanel({ result }: { result: ReturnType<typeof calcProbability> }) {
   if (!result) {
     return (
-      <div className="rounded-xl border border-border bg-surface p-6 text-center lg:sticky lg:top-20">
+      <div className="rounded-xl border border-border bg-surface p-6 text-center lg:sticky lg:top-16">
         <h2 className="mb-3 text-xs uppercase tracking-widest text-muted">Results</h2>
         <p className="py-8 text-sm text-muted">Click a substat to see probability</p>
       </div>
@@ -192,7 +267,7 @@ function ResultsPanel({ result }: { result: ReturnType<typeof calcProbability> }
   const wantNames = result.wantIds.map((id) => substatById(id)?.name ?? id)
 
   return (
-    <div className="rounded-xl border border-border bg-surface p-5 lg:sticky lg:top-20">
+    <div className="rounded-xl border border-border bg-surface p-5 lg:sticky lg:top-16">
       <h2 className="mb-3 text-center text-xs uppercase tracking-widest text-muted">Results</h2>
       <div className="fade-in text-center">
         <div className="text-4xl font-extrabold tabular-nums" style={{ color: RESULT_COLORS[cls] }}>
@@ -325,7 +400,7 @@ function DonutChart({ fraction }: { fraction: number }) {
     }
 
     if (currentRef.current === 0 && targetRef.current > 0) {
-      currentRef.current = targetRef.current > 0 ? Math.max(0.001, 0) : 0
+      currentRef.current = 0.001
     }
     if (rafRef.current) cancelAnimationFrame(rafRef.current)
     if (targetRef.current === 0) {
@@ -341,143 +416,4 @@ function DonutChart({ fraction }: { fraction: number }) {
   }, [fraction])
 
   return <canvas ref={canvasRef} className="h-full w-full" />
-}
-
-function ValuePopover({
-  substat,
-  range,
-  anchorRect,
-  onChange,
-}: {
-  substat: ProbSubstat
-  range: ValueRange
-  anchorRect: DOMRect
-  onChange: (range: ValueRange) => void
-}) {
-  const N = substat.values.length
-  const [minIdx, setMinIdx] = useState(range.min)
-  const [maxIdx, setMaxIdx] = useState(range.max)
-  // Refs mirror the live indices so pointer-move handlers never read stale state.
-  const minRef = useRef(range.min)
-  const maxRef = useRef(range.max)
-
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  const [pos, setPos] = useState<{ top: number; left: number; arrowLeft: number; arrowBottom?: boolean } | null>(null)
-
-  useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
-    const popW = el.offsetWidth
-    const popH = el.offsetHeight
-    let top = anchorRect.bottom + 8
-    let left = anchorRect.left + anchorRect.width / 2 - popW / 2
-    if (left < 8) left = 8
-    if (left + popW > window.innerWidth - 8) left = window.innerWidth - popW - 8
-    let arrowLeft = anchorRect.left + anchorRect.width / 2 - left
-    arrowLeft = Math.max(10, Math.min(popW - 10, arrowLeft))
-    let arrowBottom = false
-    if (top + popH > window.innerHeight - 8) {
-      top = anchorRect.top - popH - 8
-      arrowBottom = true
-    }
-    setPos({ top, left, arrowLeft, arrowBottom })
-  }, [anchorRect, N])
-
-  function apply(mn: number, mx: number) {
-    minRef.current = mn
-    maxRef.current = mx
-    setMinIdx(mn)
-    setMaxIdx(mx)
-    onChange({ min: mn, max: mx })
-  }
-
-  const pct = (i: number) => `${(i / (N - 1)) * 100}%`
-
-  const thumbHandlers = (isLeft: boolean) => ({
-    onPointerDown: (e: React.PointerEvent) => {
-      e.preventDefault()
-      const move = (ev: PointerEvent) => {
-        const track = containerRef.current?.querySelector('.vs-track')
-        if (!track) return
-        const rect = (track as HTMLElement).getBoundingClientRect()
-        let p = (ev.clientX - rect.left) / rect.width
-        p = Math.max(0, Math.min(1, p))
-        let idx = Math.round(p * (N - 1))
-        let mn = minRef.current
-        let mx = maxRef.current
-        if (isLeft) {
-          idx = Math.max(0, Math.min(mx - 1, idx))
-          mn = idx
-        } else {
-          idx = Math.min(N - 1, Math.max(mn + 1, idx))
-          mx = idx
-        }
-        apply(mn, mx)
-      }
-      const up = () => {
-        document.removeEventListener('pointermove', move)
-        document.removeEventListener('pointerup', up)
-      }
-      document.addEventListener('pointermove', move)
-      document.addEventListener('pointerup', up)
-    },
-  })
-
-  return (
-    <div
-      ref={containerRef}
-      className="value-popover fixed z-50 w-[330px] max-w-[calc(100vw-24px)] rounded-xl border border-border bg-surface p-5 pb-3.5 shadow-2xl"
-      style={pos ? { top: pos.top, left: pos.left } : { visibility: 'hidden' }}
-    >
-      {pos && (
-        <div
-          className="absolute h-3.5 w-3.5 -translate-x-1/2 rotate-45 border-border bg-surface"
-          style={{
-            top: pos.arrowBottom ? 'auto' : -7,
-            bottom: pos.arrowBottom ? -7 : 'auto',
-            left: pos.arrowLeft,
-            transform: pos.arrowBottom ? 'rotate(225deg)' : 'rotate(45deg)',
-            ...(pos.arrowBottom
-              ? { borderBottom: '1px solid var(--color-border)', borderRight: '1px solid var(--color-border)' }
-              : { borderTop: '1px solid var(--color-border)', borderLeft: '1px solid var(--color-border)' }),
-          }}
-        />
-      )}
-
-      <div className="mb-1 text-center text-xs font-semibold text-teal">
-        {valueLabel(substat, substat.values[minIdx])} – {valueLabel(substat, substat.values[maxIdx])}
-      </div>
-
-      <div className="vs-track-wrap relative h-7">
-        <div className="vs-track absolute left-1 right-1 top-1/2 h-1 -translate-y-1/2 rounded bg-bg" />
-        <div
-          className="vs-fill absolute top-0 h-full rounded"
-          style={{
-            left: pct(minIdx),
-            width: `calc(${pct(maxIdx)} - ${pct(minIdx)})`,
-            background: 'linear-gradient(90deg, #0088cc, #00d4ff)',
-          }}
-        />
-        <div
-          className="vs-thumb absolute top-1/2 z-10 h-4 w-4 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full border-2 border-white bg-teal shadow-[0_0_6px_rgba(0,212,255,0.4)]"
-          style={{ left: pct(minIdx) }}
-          {...thumbHandlers(true)}
-        />
-        <div
-          className="vs-thumb absolute top-1/2 z-10 h-4 w-4 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full border-2 border-white bg-teal shadow-[0_0_6px_rgba(0,212,255,0.4)]"
-          style={{ left: pct(maxIdx) }}
-          {...thumbHandlers(false)}
-        />
-      </div>
-
-      <div className="pointer-events-none flex justify-between px-1 pt-0.5 text-[0.62rem] text-muted">
-        {substat.values.map((v, i) => (
-          <span key={i} className={i >= minIdx && i <= maxIdx ? 'font-semibold text-teal' : ''}>
-            {valueLabel(substat, v)}
-          </span>
-        ))}
-      </div>
-    </div>
-  )
 }
