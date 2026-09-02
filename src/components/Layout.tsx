@@ -18,11 +18,16 @@ export function Layout({
 
   return (
     <div className="min-h-screen">
-      <Sidebar open={open} active={active} onClose={() => setOpen(false)} />
+      <Sidebar
+        open={open}
+        active={active}
+        onClose={() => setOpen(false)}
+        onExpand={() => setOpen(true)}
+      />
 
       <div
         className={`flex min-h-screen flex-col transition-[margin] duration-200 ${
-          open ? 'md:ml-64' : ''
+          open ? 'md:ml-64' : 'md:ml-14'
         }`}
       >
         <SiteHeader onToggleSidebar={() => setOpen((o) => !o)} />

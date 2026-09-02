@@ -4,7 +4,6 @@ interface ToolCard {
   href: string
   name: string
   desc: string
-  chips: string[]
   accent: 'gold' | 'teal' | 'accent'
 }
 
@@ -12,50 +11,43 @@ const TOOLS: ToolCard[] = [
   {
     href: href('comparison.html'),
     name: 'Echo Substat Comparison',
-    desc: 'Build multiple echo substat profiles side by side, weight them for a specific resonator, and see which gear or planned roll wins.',
-    chips: ['13 substats', 'Presets', 'Weighted score'],
+    desc: 'Compare multiple echoes for specific resonators',
     accent: 'gold',
   },
   {
     href: href('probability.html'),
-    name: 'Echo Substats Calculator',
-    desc: 'Estimate the probability of rolling exactly the substat values you want, with a live donut chart and per-stat breakdown.',
-    chips: ['Roll odds', 'Range sliders', 'Live chart'],
+    name: 'Echo Substat Calculator',
+    desc: 'Visualize the probability of getting a specific set of substats',
     accent: 'teal',
   },
   {
     href: href('xp-tuners.html'),
-    name: 'Echo Budget & Balance',
-    desc: 'Keep your Echo XP, Premium Tuners, and Shell Credits in check when rolling — find the checkpoint where your stash is balanced.',
-    chips: ['XP', 'Tuners', 'Shell Credits'],
+    name: 'Echo Resources',
+    desc: 'Figure out how much XP and Tuners you can spend',
     accent: 'accent',
   },
 ]
 
-const ACCENT_STYLES: Record<ToolCard['accent'], { text: string; glow: string; chip: string }> = {
+const ACCENT_STYLES: Record<ToolCard['accent'], { text: string; glow: string }> = {
   gold: {
     text: 'text-gold',
     glow: 'hover:border-gold/50 hover:shadow-[0_0_30px_rgba(201,165,60,0.12)]',
-    chip: 'bg-gold/10 text-gold border-gold/25',
   },
   teal: {
     text: 'text-teal',
     glow: 'hover:border-teal/50 hover:shadow-[0_0_30px_rgba(79,195,196,0.12)]',
-    chip: 'bg-teal/10 text-teal border-teal/25',
   },
   accent: {
     text: 'text-accent',
     glow: 'hover:border-accent/50 hover:shadow-[0_0_30px_rgba(158,203,255,0.12)]',
-    chip: 'bg-accent/10 text-accent border-accent/25',
   },
 }
 
 export function Landing() {
   return (
-    <div className="page-wrap pt-16 sm:pt-20">
+    <div className="page-wrap pt-14 sm:pt-20">
       <section className="mx-auto max-w-3xl text-center">
-        <span className="chip border-gold/25 bg-gold/10 text-gold">Wuthering Waves</span>
-        <h1 className="mt-5 text-4xl font-bold tracking-tight sm:text-5xl">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
           Echo{' '}
           <span className="bg-gradient-to-r from-gold via-gold-bright to-gold bg-clip-text text-transparent">
             Planning Tools
@@ -78,16 +70,6 @@ export function Landing() {
             >
               <span className={`text-lg font-semibold ${s.text}`}>{tool.name}</span>
               <p className="text-sm leading-relaxed text-muted">{tool.desc}</p>
-              <div className="mt-auto flex flex-wrap gap-1.5 pt-2">
-                {tool.chips.map((c) => (
-                  <span key={c} className={`chip ${s.chip}`}>
-                    {c}
-                  </span>
-                ))}
-              </div>
-              <span className="mt-1 text-sm font-medium text-faint transition-colors group-hover:text-text">
-                Open tool →
-              </span>
             </a>
           )
         })}

@@ -3,7 +3,7 @@ import { href } from '../lib/paths'
 export function SiteHeader({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   return (
     <header className="sticky top-0 z-30 border-b border-border/70 bg-bg/85 backdrop-blur">
-      <div className="flex h-16 items-center gap-3 px-5">
+      <div className="flex h-12 items-center gap-2.5 px-4">
         <button
           onClick={onToggleSidebar}
           aria-label="Toggle navigation"
@@ -14,7 +14,7 @@ export function SiteHeader({ onToggleSidebar }: { onToggleSidebar: () => void })
         </button>
         <a
           href={href('')}
-          className="text-lg font-bold tracking-tight text-text transition-colors hover:text-gold"
+          className="text-base font-bold tracking-tight text-text transition-colors hover:text-gold"
         >
           Accu&rsquo;s Tools
         </a>
