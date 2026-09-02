@@ -12,16 +12,16 @@ export interface Checkpoint {
   substats: string
   /** index of next checkpoint, or -1 if maxed */
   next: number
-  /** reference XP-per-tuner ratio for this checkpoint */
-  ratio: number
 }
 
+// Tuner counts are cumulative and assume 10 Tuners per tune
+// (5 tunes at +5/+10/+15/+20/+25 = 50 Tuners to max an Echo).
 export const CHECKPOINTS: Checkpoint[] = [
-  { xp: 4400, tuners: 1, sc: 2440, label: '+5', substats: '1 substat', next: -1, ratio: 4400 },
-  { xp: 16500, tuners: 2, sc: 5650, label: '+10', substats: '2 substats', next: -1, ratio: 8250 },
-  { xp: 39600, tuners: 3, sc: 9960, label: '+15', substats: '3 substats', next: 1, ratio: 13200 },
-  { xp: 79100, tuners: 4, sc: 15910, label: '+20', substats: '4 substats', next: 2, ratio: 19775 },
-  { xp: 142600, tuners: 5, sc: 24260, label: '+25', substats: '5 substats', next: 3, ratio: 28520 },
+  { xp: 4400, tuners: 10, sc: 2440, label: '+5', substats: '1 substat', next: -1 },
+  { xp: 16500, tuners: 20, sc: 5650, label: '+10', substats: '2 substats', next: -1 },
+  { xp: 39600, tuners: 30, sc: 9960, label: '+15', substats: '3 substats', next: 1 },
+  { xp: 79100, tuners: 40, sc: 15910, label: '+20', substats: '4 substats', next: 2 },
+  { xp: 142600, tuners: 50, sc: 24260, label: '+25', substats: '5 substats', next: 3 },
 ]
 
 export const TUBE_XP = {

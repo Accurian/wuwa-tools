@@ -28,7 +28,8 @@ function buildBalance(res: Resources, cpIdx: number): BalanceState {
   const maxVal = Math.max(byXp, byTuners, bySc, 1)
 
   const ratio = res.tuners > 0 ? res.xp / res.tuners : res.xp > 0 ? Infinity : 1
-  const bal = getBalanceText(ratio, cp.ratio)
+  const cpRatio = cp.xp / cp.tuners
+  const bal = getBalanceText(ratio, cpRatio)
   const ratioDisplay = res.tuners > 0 ? `${fmtRatio(res.xp / res.tuners)} : 1` : '\u221e : 1'
 
   return { cp, byXp, byTuners, bySc, maxTest, maxVal, bal, ratioDisplay }
@@ -81,7 +82,7 @@ export function XpTuners() {
         </div>
 
         <div className="mt-4 flex flex-wrap gap-4">
-          <NumberField label="Premium Tuners" hint="Each tune at +5/+10/+15/+20/+25 costs 1" value={tuners} onChange={setTuners} />
+          <NumberField label="Premium Tuners" hint="Each tune at +5/+10/+15/+20/+25 costs 10" value={tuners} onChange={setTuners} />
           <NumberField label="Shell Credits" hint="0.1 × XP + 2,000 per tune" value={sc} onChange={setSc} step={5000} />
         </div>
       </section>
