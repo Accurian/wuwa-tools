@@ -301,10 +301,6 @@ export const PRESETS: Record<string, Preset> = {
     label: 'Qiuyuan',
     weights: { 'Crit. DMG': 6.91, 'Crit. Rate': 6.42, 'ATK%': 3.62, ATK: 1.9, 'Heavy ATK DMG Bonus': 1.93 },
   },
-  'qiuyuan-2x-forte': {
-    label: 'Qiuyuan (2x Forte)',
-    weights: { 'Crit. DMG': 6.91, 'Crit. Rate': 6.42, 'ATK%': 3.62, ATK: 1.9, 'Heavy ATK DMG Bonus': 1.93 },
-  },
   phrolova: {
     label: 'Phrolova',
     weights: { 'Crit. DMG': 5.02, 'Crit. Rate': 5.1, 'ATK%': 2.64, ATK: 1.25, 'Basic ATK DMG Bonus': 0.15, 'Res. Skill DMG Bonus': 1.45 },
@@ -314,7 +310,7 @@ export const PRESETS: Record<string, Preset> = {
     weights: { 'Crit. DMG': 4.93, 'Crit. Rate': 5.7, 'ATK%': 2.45, ATK: 1.18, 'Heavy ATK DMG Bonus': 2.45 },
   },
   'iuno-mdps': {
-    label: 'Iuno MDPS',
+    label: 'Iuno (MDPS)',
     weights: { 'Crit. DMG': 4.41, 'Crit. Rate': 6.23, 'ATK%': 3.04, ATK: 1.62, 'Basic ATK DMG Bonus': 0.17, 'Res. Skill DMG Bonus': 0.55, 'Res. Liberation DMG Bonus': 2.3 },
   },
   carlotta: {

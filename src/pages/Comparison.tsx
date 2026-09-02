@@ -216,6 +216,7 @@ export function Comparison() {
           <option value="">Presets</option>
           {Object.entries(PRESETS)
             .filter(([k]) => k !== '')
+            .sort(([, a], [, b]) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }))
             .map(([k, p]) => (
               <option key={k} value={k}>
                 {p.label}
