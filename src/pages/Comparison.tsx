@@ -203,16 +203,7 @@ export function Comparison() {
   )
 
   return (
-    <div className="page-wrap pt-6">
-      <div className="pb-4 text-center sm:pt-4">
-        <h1 className="text-2xl font-bold tracking-wide sm:text-3xl">
-          <span className="bg-gradient-to-r from-gold via-gold-bright to-gold bg-clip-text text-transparent">
-            ECHO SUBSTAT COMPARISON
-          </span>
-        </h1>
-        <p className="mt-1 text-sm text-muted">Compare echo roll quality side by side</p>
-      </div>
-
+    <div className="page-wrap pt-8">
       <div className="mb-4 flex flex-wrap items-center justify-center gap-2">
         <button className="btn btn-primary" onClick={addEcho}>
           + Add Echo

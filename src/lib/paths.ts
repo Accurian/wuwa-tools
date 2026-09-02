@@ -6,13 +6,14 @@ export function href(page: string): string {
 }
 
 export interface NavItem {
+  key: string
   href: string
   label: string
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { href: href(''), label: 'Home' },
-  { href: href('comparison.html'), label: 'Compare' },
-  { href: href('probability.html'), label: 'Probability' },
-  { href: href('xp-tuners.html'), label: 'Balance' },
+  { key: 'home', href: href(''), label: 'Home' },
+  { key: 'comparison', href: href('comparison.html'), label: 'Echo Value Calculator' },
+  { key: 'probability', href: href('probability.html'), label: 'Echo Substat Probability' },
+  { key: 'xp-tuners', href: href('xp-tuners.html'), label: 'Echo Resources' },
 ]

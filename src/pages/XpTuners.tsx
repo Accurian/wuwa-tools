@@ -301,15 +301,7 @@ export function XpTuners() {
   }
 
   return (
-    <div className="page-wrap pt-6">
-      <div className="pb-5 text-center">
-        <h1 className="text-2xl font-bold sm:text-3xl">
-          <span className="text-text">echoes.</span>
-          <span className="text-info">balance</span>
-        </h1>
-        <p className="mt-1 text-sm text-muted">Keep your Echo XP and Premium Tuners in check — smart rolling from +10 onward</p>
-      </div>
-
+    <div className="page-wrap pt-8">
       {/* Resources */}
       <section className="card">
         <h2 className="card-title">Your Resources</h2>

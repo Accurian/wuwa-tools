@@ -94,18 +94,7 @@ export function Probability() {
   const popSubstat = popover ? substatById(popover.id) : null
 
   return (
-    <div className="page-wrap pt-6">
-      <div className="pb-5 text-center">
-        <h1 className="text-2xl font-bold sm:text-3xl">
-          <span className="bg-gradient-to-r from-teal to-success bg-clip-text text-transparent">
-            ECHO SUBSTATS CALCULATOR
-          </span>
-        </h1>
-        <p className="mt-1 text-sm text-muted">
-          Select up to {SLOTS} substats to estimate rolling probability
-        </p>
-      </div>
-
+    <div className="page-wrap pt-8">
       <div className="grid items-start gap-4 lg:grid-cols-[1fr_300px]">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {PROB_SUBSTATS.map((s) => (
