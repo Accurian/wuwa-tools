@@ -7,7 +7,7 @@ const r = (p: string) => fileURLToPath(new URL(p, import.meta.url))
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/wuwa-tools/',
+  base: '/',
   plugins: [react(), tailwindcss()],
   build: {
     rollupOptions: {
