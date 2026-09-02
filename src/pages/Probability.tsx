@@ -66,32 +66,30 @@ export function Probability() {
 
   return (
     <div className="page-wrap pt-8">
-      <div className="grid items-start gap-4 lg:grid-cols-[1fr_320px]">
-        <section>
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm text-muted">
-              Pick up to {SLOTS} substats, then drag the bar to set the roll range you&rsquo;ll accept.
-            </p>
-            <span className="chip bg-surface-3 text-text">
-              {selectedCount}/{SLOTS}
-            </span>
-          </div>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-muted">
+          Pick up to {SLOTS} substats, then drag the bar to set the roll range you&rsquo;ll accept.
+        </p>
+        <span className="chip bg-surface-3 text-text">
+          {selectedCount}/{SLOTS}
+        </span>
+      </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {PROB_SUBSTATS.map((s) => (
-              <SubstatCard
-                key={s.id}
-                substat={s}
-                selected={!!selected[s.id]}
-                maxed={!selected[s.id] && isMaxed}
-                range={valueRanges[s.id] || { min: 0, max: s.values.length - 1 }}
-                onToggle={() => toggleSelect(s.id)}
-                onRangeChange={(range) => setRange(s.id, range)}
-              />
-            ))}
-          </div>
-        </section>
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        {PROB_SUBSTATS.map((s) => (
+          <SubstatCard
+            key={s.id}
+            substat={s}
+            selected={!!selected[s.id]}
+            maxed={!selected[s.id] && isMaxed}
+            range={valueRanges[s.id] || { min: 0, max: s.values.length - 1 }}
+            onToggle={() => toggleSelect(s.id)}
+            onRangeChange={(range) => setRange(s.id, range)}
+          />
+        ))}
+      </div>
 
+      <div className="mt-4">
         <ResultsPanel result={result} />
       </div>
     </div>
@@ -116,17 +114,17 @@ function SubstatCard({
   return (
     <div
       onClick={onToggle}
-      className={`rounded-xl border p-3 transition-all ${
+      className={`rounded-xl border p-4 transition-all ${
         maxed
           ? 'cursor-default border-border bg-surface opacity-50'
           : selected
-            ? 'border-teal bg-gradient-to-br from-teal/10 to-transparent shadow-[0_0_14px_rgba(79,195,196,0.16)]'
-            : 'cursor-pointer border-border bg-surface hover:border-info hover:bg-surface-2'
+            ? 'cursor-pointer border-white/70 bg-gradient-to-br from-white/10 to-transparent shadow-[0_0_18px_rgba(255,255,255,0.08)]'
+            : 'cursor-pointer border-border bg-surface hover:border-white/40 hover:bg-surface-2'
       }`}
     >
-      <div className="mb-2 flex items-center justify-center gap-2">
-        <span className="h-2 w-2 rounded-full" style={{ background: COLOR_MAP[substat.color] }} />
-        <span className={`text-sm font-medium ${selected ? 'text-text' : 'text-muted'}`}>
+      <div className="mb-3 flex items-center justify-center gap-2">
+        <span className="h-2.5 w-2.5 rounded-full" style={{ background: COLOR_MAP[substat.color] }} />
+        <span className={`text-base font-medium ${selected ? 'text-text' : 'text-muted'}`}>
           {substat.name}
         </span>
       </div>
@@ -208,36 +206,36 @@ function RangeSlider({
       onClick={(e) => e.stopPropagation()}
       className={disabled ? 'pointer-events-none opacity-50' : ''}
     >
-      <div className="relative h-5 select-none">
+      <div className="relative h-4 select-none">
         <div
           ref={trackRef}
-          className="absolute left-0 right-0 top-1/2 h-[2px] -translate-y-1/2 rounded-full bg-white/10"
+          className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-bg"
         />
         <div
-          className="absolute top-1/2 h-[2px] -translate-y-1/2 rounded-full bg-gradient-to-r from-teal to-accent shadow-[0_0_8px_rgba(79,195,196,0.35)]"
+          className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-info"
           style={{
             left: pct(minIdx),
             width: `calc(${pct(maxIdx)} - ${pct(minIdx)})`,
           }}
         />
         <div
-          className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.5)] transition-transform active:scale-110"
+          className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full border-2 border-white bg-info shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-transform active:scale-110"
           style={{ left: pct(minIdx) }}
           {...thumbHandlers(true)}
         />
         <div
-          className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.5)] transition-transform active:scale-110"
+          className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full border-2 border-white bg-info shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-transform active:scale-110"
           style={{ left: pct(maxIdx) }}
           {...thumbHandlers(false)}
         />
       </div>
 
-      <div className="pointer-events-none mt-1 flex justify-between">
+      <div className="pointer-events-none mt-1.5 flex justify-between">
         {values.map((v, i) => (
           <span
             key={i}
-            className={`text-[0.6rem] tabular-nums transition-colors ${
-              i >= minIdx && i <= maxIdx ? 'font-semibold text-teal' : 'text-faint/70'
+            className={`text-[0.62rem] tabular-nums leading-none transition-colors ${
+              i >= minIdx && i <= maxIdx ? 'font-semibold text-text' : 'text-faint/70'
             }`}
           >
             {format(v)}
@@ -251,7 +249,7 @@ function RangeSlider({
 function ResultsPanel({ result }: { result: ReturnType<typeof calcProbability> }) {
   if (!result) {
     return (
-      <div className="rounded-xl border border-border bg-surface p-6 text-center lg:sticky lg:top-16">
+      <div className="rounded-xl border border-border bg-surface p-6 text-center">
         <h2 className="mb-3 text-xs uppercase tracking-widest text-muted">Results</h2>
         <p className="py-8 text-sm text-muted">Click a substat to see probability</p>
       </div>
@@ -266,7 +264,7 @@ function ResultsPanel({ result }: { result: ReturnType<typeof calcProbability> }
   const wantNames = result.wantIds.map((id) => substatById(id)?.name ?? id)
 
   return (
-    <div className="rounded-xl border border-border bg-surface p-5 lg:sticky lg:top-16">
+    <div className="rounded-xl border border-border bg-surface p-5">
       <h2 className="mb-3 text-center text-xs uppercase tracking-widest text-muted">Results</h2>
       <div className="fade-in text-center">
         <div className="text-4xl font-extrabold tabular-nums" style={{ color: RESULT_COLORS[cls] }}>
@@ -287,7 +285,7 @@ function ResultsPanel({ result }: { result: ReturnType<typeof calcProbability> }
         )}
 
         {!result.impossible && (
-          <div className="mt-2.5 border-t border-border pt-2">
+          <div className="mx-auto mt-2.5 max-w-lg border-t border-border pt-2">
             <h3 className="mb-1 text-[0.65rem] uppercase tracking-wider text-muted">Breakdown</h3>
             <table className="w-full border-collapse text-xs">
               <thead>
@@ -311,7 +309,7 @@ function ResultsPanel({ result }: { result: ReturnType<typeof calcProbability> }
                     </tr>
                   )
                 })}
-                <tr className="border-t-2 border-border font-bold text-teal">
+                <tr className="border-t-2 border-border font-bold text-text">
                   <td className="px-1 py-1">Combined</td>
                   <td className="px-1 py-1 tabular-nums">{formatPct(result.basicProb)}</td>
                   <td className="px-1 py-1 tabular-nums">{formatPct(result.valueFactor)}</td>

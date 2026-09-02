@@ -5,6 +5,21 @@ import { SiteFooter } from './SiteFooter'
 import { Sidebar } from './Sidebar'
 import { getPageTitle } from '../lib/paths'
 
+const SIDEBAR_KEY = 'wuwa:sidebar-open'
+
+function initialOpen(): boolean {
+  if (typeof window === 'undefined') return true
+  // Persist the user's choice across page loads (MPA navigation reloads).
+  try {
+    const saved = localStorage.getItem(SIDEBAR_KEY)
+    if (saved !== null) return saved === '1'
+  } catch {
+    /* ignore */
+  }
+  // Default: open on desktop, collapsed (drawer) on small screens.
+  return window.innerWidth >= 768
+}
+
 export function Layout({
   active,
   children,
@@ -12,18 +27,24 @@ export function Layout({
   active: string
   children: ReactNode
 }) {
-  // Open by default on desktop; closed (drawer) on small screens.
-  const [open, setOpen] = useState(() =>
-    typeof window !== 'undefined' ? window.innerWidth >= 768 : true,
-  )
+  const [open, setOpen] = useState(initialOpen)
+
+  function setOpenPersist(next: boolean) {
+    setOpen(next)
+    try {
+      localStorage.setItem(SIDEBAR_KEY, next ? '1' : '0')
+    } catch {
+      /* ignore */
+    }
+  }
 
   return (
     <div className="min-h-screen">
       <Sidebar
         open={open}
         active={active}
-        onClose={() => setOpen(false)}
-        onExpand={() => setOpen(true)}
+        onClose={() => setOpenPersist(false)}
+        onExpand={() => setOpenPersist(true)}
       />
 
       <div
@@ -31,7 +52,7 @@ export function Layout({
           open ? 'md:ml-64' : 'md:ml-14'
         }`}
       >
-        <SiteHeader onToggleSidebar={() => setOpen((o) => !o)} title={getPageTitle(active)} />
+        <SiteHeader onToggleSidebar={() => setOpenPersist(!open)} title={getPageTitle(active)} />
         <main className="flex-1">{children}</main>
         <SiteFooter />
       </div>
