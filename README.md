@@ -1,4 +1,4 @@
-# wuwa-tools
+# Wuthering Waves Tools
 
 Tools for **Wuthering Waves**, deployed on [Vercel](https://vercel.com/). Everything runs entirely in the browser — no data collected, no tracking.
 
