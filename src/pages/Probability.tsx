@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import {
   PROB_SUBSTATS,
   calcProbability,
@@ -261,8 +261,6 @@ function ResultsPanel({ result }: { result: ReturnType<typeof calcProbability> }
   const oneIn = format1inX(p)
   const cls = pctClass(p)
 
-  const wantNames = result.wantIds.map((id) => substatById(id)?.name ?? id)
-
   return (
     <div className="rounded-xl border border-border bg-surface p-5">
       <h2 className="mb-3 text-center text-xs uppercase tracking-widest text-muted">Results</h2>
@@ -272,11 +270,20 @@ function ResultsPanel({ result }: { result: ReturnType<typeof calcProbability> }
         </div>
         <div className="mt-0.5 text-sm font-semibold text-muted">{oneIn}</div>
 
-        <div className="relative mx-auto my-2.5 h-[150px] w-[150px]">
-          <DonutChart fraction={p} />
-        </div>
-
-        <p className="mt-0.5 text-xs leading-relaxed text-muted">{wantNames.join(' + ')}</p>
+        {result.wantIds.length > 0 && (
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5">
+            {result.wantIds.map((id) => {
+              const s = substatById(id)
+              if (!s) return null
+              return (
+                <span key={id} className="chip border-border bg-surface-2 text-text">
+                  <span className="h-2 w-2 rounded-full" style={{ background: COLOR_MAP[s.color] }} />
+                  {s.name}
+                </span>
+              )
+            })}
+          </div>
+        )}
 
         {result.impossible && (
           <p className="mt-1.5 text-xs font-semibold" style={{ color: 'var(--color-danger)' }}>
@@ -290,10 +297,10 @@ function ResultsPanel({ result }: { result: ReturnType<typeof calcProbability> }
             <table className="w-full border-collapse text-xs">
               <thead>
                 <tr>
-                  <th className="border-b border-border px-1 py-0.5 text-left font-semibold uppercase tracking-wide text-muted">Substat</th>
-                  <th className="border-b border-border px-1 py-0.5 text-left font-semibold uppercase tracking-wide text-muted">Roll</th>
-                  <th className="border-b border-border px-1 py-0.5 text-left font-semibold uppercase tracking-wide text-muted">Value</th>
-                  <th className="border-b border-border px-1 py-0.5 text-left font-semibold uppercase tracking-wide text-muted">Total</th>
+                  <th className="border-b border-border px-1 py-0.5 text-center font-semibold uppercase tracking-wide text-muted">Substat</th>
+                  <th className="border-b border-border px-1 py-0.5 text-center font-semibold uppercase tracking-wide text-muted">Roll</th>
+                  <th className="border-b border-border px-1 py-0.5 text-center font-semibold uppercase tracking-wide text-muted">Value</th>
+                  <th className="border-b border-border px-1 py-0.5 text-center font-semibold uppercase tracking-wide text-muted">Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -302,18 +309,18 @@ function ResultsPanel({ result }: { result: ReturnType<typeof calcProbability> }
                   const name = substatById(id)?.name ?? id
                   return (
                     <tr key={id} className="border-b border-border/40">
-                      <td className="px-1 py-0.5">{name}</td>
-                      <td className="px-1 py-0.5 tabular-nums">{formatPct(d.indivProb)}</td>
-                      <td className="px-1 py-0.5 tabular-nums">{formatPct(d.valueProb)}</td>
-                      <td className="px-1 py-0.5 tabular-nums">{formatPct(d.indivProb * d.valueProb)}</td>
+                      <td className="px-1 py-0.5 text-center">{name}</td>
+                      <td className="px-1 py-0.5 text-center tabular-nums">{formatPct(d.indivProb)}</td>
+                      <td className="px-1 py-0.5 text-center tabular-nums">{formatPct(d.valueProb)}</td>
+                      <td className="px-1 py-0.5 text-center tabular-nums">{formatPct(d.indivProb * d.valueProb)}</td>
                     </tr>
                   )
                 })}
                 <tr className="border-t-2 border-border font-bold text-text">
-                  <td className="px-1 py-1">Combined</td>
-                  <td className="px-1 py-1 tabular-nums">{formatPct(result.basicProb)}</td>
-                  <td className="px-1 py-1 tabular-nums">{formatPct(result.valueFactor)}</td>
-                  <td className="px-1 py-1 tabular-nums">{pct}</td>
+                  <td className="px-1 py-1 text-center">Combined</td>
+                  <td className="px-1 py-1 text-center tabular-nums">{formatPct(result.basicProb)}</td>
+                  <td className="px-1 py-1 text-center tabular-nums">{formatPct(result.valueFactor)}</td>
+                  <td className="px-1 py-1 text-center tabular-nums">{pct}</td>
                 </tr>
               </tbody>
             </table>
@@ -322,95 +329,4 @@ function ResultsPanel({ result }: { result: ReturnType<typeof calcProbability> }
       </div>
     </div>
   )
-}
-
-function DonutChart({ fraction }: { fraction: number }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const currentRef = useRef(0)
-  const targetRef = useRef(fraction)
-  const rafRef = useRef(0)
-
-  useEffect(() => {
-    targetRef.current = fraction
-
-    function draw(pct: number) {
-      const canvas = canvasRef.current
-      const ctx = canvas?.getContext('2d')
-      if (!canvas || !ctx) return
-      const size = canvas.parentElement?.getBoundingClientRect().width || 150
-      const dpr = window.devicePixelRatio || 1
-      canvas.width = size * dpr
-      canvas.height = size * dpr
-      canvas.style.width = `${size}px`
-      canvas.style.height = `${size}px`
-      ctx.scale(dpr, dpr)
-      const cx = size / 2
-      const cy = size / 2
-      const outer = size * 0.42
-      const inner = size * 0.26
-      ctx.clearRect(0, 0, size, size)
-      const f = Math.min(1, Math.max(0, pct))
-      const angle = f * Math.PI * 2
-      const start = -Math.PI / 2
-
-      ctx.beginPath()
-      ctx.arc(cx, cy, outer, 0, Math.PI * 2)
-      ctx.arc(cx, cy, inner, Math.PI * 2, 0, true)
-      ctx.closePath()
-      ctx.fillStyle = '#2c2c2e'
-      ctx.fill()
-
-      if (f > 0.001) {
-        ctx.beginPath()
-        ctx.arc(cx, cy, outer, start, start + angle)
-        ctx.arc(cx, cy, inner, start + angle, start, true)
-        ctx.closePath()
-        const grad = ctx.createLinearGradient(0, 0, size, size)
-        grad.addColorStop(0, '#00d4ff')
-        grad.addColorStop(0.5, '#00b8e8')
-        grad.addColorStop(1, '#00ff88')
-        ctx.fillStyle = grad
-        ctx.fill()
-      }
-
-      ctx.fillStyle = '#f1f2f4'
-      ctx.font = `bold ${size * 0.14}px -apple-system, sans-serif`
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-      ctx.fillText(formatPct(f), cx, cy - size * 0.035)
-      ctx.fillStyle = '#c6c9cf'
-      ctx.font = `${size * 0.07}px -apple-system, sans-serif`
-      ctx.fillText(format1inX(f), cx, cy + size * 0.1)
-    }
-
-    function animate() {
-      const diff = targetRef.current - currentRef.current
-      if (Math.abs(diff) < 0.0005) {
-        currentRef.current = targetRef.current
-        draw(currentRef.current)
-        rafRef.current = 0
-        return
-      }
-      currentRef.current += diff * 0.15
-      draw(currentRef.current)
-      rafRef.current = requestAnimationFrame(animate)
-    }
-
-    if (currentRef.current === 0 && targetRef.current > 0) {
-      currentRef.current = 0.001
-    }
-    if (rafRef.current) cancelAnimationFrame(rafRef.current)
-    if (targetRef.current === 0) {
-      currentRef.current = 0
-      draw(0)
-    } else {
-      animate()
-    }
-
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
-    }
-  }, [fraction])
-
-  return <canvas ref={canvasRef} className="h-full w-full" />
 }
