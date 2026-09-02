@@ -1,103 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WuWa Echo Tools</title>
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg: #0e1116;
-      --card: #171c24;
-      --card-hover: #1d2430;
-      --border: #2a3340;
-      --text: #d7dee8;
-      --muted: #8b97a8;
-      --accent: #9ecbff;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: radial-gradient(1200px 600px at 50% -10%, #1a2333 0%, var(--bg) 60%);
-      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 48px 24px;
-    }
-    h1 {
-      font-size: 2rem;
-      letter-spacing: 0.02em;
-      margin: 0 0 8px;
-    }
-    p.sub {
-      margin: 0 0 40px;
-      color: var(--muted);
-      font-size: 1rem;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 20px;
-      width: 100%;
-      max-width: 980px;
-    }
-    a.card {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 22px;
-      text-decoration: none;
-      color: var(--text);
-      transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
-    }
-    a.card:hover {
-      background: var(--card-hover);
-      border-color: var(--accent);
-      transform: translateY(-2px);
-    }
-    a.card .name {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--accent);
-    }
-    a.card .desc {
-      margin: 0;
-      color: var(--muted);
-      font-size: 0.92rem;
-      line-height: 1.5;
-    }
-    footer {
-      margin-top: 48px;
-      color: var(--muted);
-      font-size: 0.8rem;
-    }
-  </style>
-</head>
-<body>
-  <h1>WuWa Echo Tools</h1>
-  <p class="sub">Community calculators for Wuthering Waves Echo planning &mdash; all client-side, no data leaves your browser.</p>
-
-  <div class="grid">
-    <a class="card" href="echo-building-budget.html">
-      <span class="name">Echo Budget &amp; Balance Tool</span>
-      <p class="desc">Plan how to spend Echo across resonator builds and keep your spending balanced.</p>
-    </a>
-    <a class="card" href="echo-comparison.html">
-      <span class="name">Echo Substat Comparison</span>
-      <p class="desc">Compare substat profiles side by side to see which gear or plan wins.</p>
-    </a>
-    <a class="card" href="echo-substat-probability.html">
-      <span class="name">Echo Substats Calculator</span>
-      <p class="desc">Estimate substat roll probabilities and expected value for upcoming gear.</p>
-    </a>
-  </div>
-
-  <footer>Static HTML &middot; GitHub Pages &middot; no tracking</footer>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Community calculators for Wuthering Waves Echo planning — all client-side, no data leaves your browser." />
+    <title>WuWa Echo Tools</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/entries/landing.tsx"></script>
+  </body>
 </html>
