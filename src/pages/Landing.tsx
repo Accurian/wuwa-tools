@@ -50,13 +50,9 @@ export function Landing() {
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
           Echo{' '}
           <span className="bg-gradient-to-r from-gold via-gold-bright to-gold bg-clip-text text-transparent">
-            Planning Tools
+            Tools
           </span>
         </h1>
-        <p className="mx-auto mt-4 max-w-xl text-base text-muted sm:text-lg">
-          Community calculators for Wuthering Waves Echo planning — roll odds, substat
-          comparison, and resource balance. All client-side, no data leaves your browser.
-        </p>
       </section>
 
       <section className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

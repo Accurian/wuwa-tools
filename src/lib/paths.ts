@@ -17,3 +17,15 @@ export const NAV_ITEMS: NavItem[] = [
   { key: 'probability', href: href('probability.html'), label: 'Echo Substat Probability' },
   { key: 'xp-tuners', href: href('xp-tuners.html'), label: 'Echo Resources' },
 ]
+
+/** Canonical page title shown in the top bar for the current route. */
+export const PAGE_TITLES: Record<string, string> = {
+  home: 'Echo Tools',
+  comparison: 'Echo Substat Comparison',
+  probability: 'Echo Substat Calculator',
+  'xp-tuners': 'Echo Resources',
+}
+
+export function getPageTitle(key: string): string {
+  return PAGE_TITLES[key] || 'Echo Tools'
+}

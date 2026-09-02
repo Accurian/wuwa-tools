@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { SiteHeader } from './SiteHeader'
 import { SiteFooter } from './SiteFooter'
 import { Sidebar } from './Sidebar'
+import { getPageTitle } from '../lib/paths'
 
 export function Layout({
   active,
@@ -30,7 +31,7 @@ export function Layout({
           open ? 'md:ml-64' : 'md:ml-14'
         }`}
       >
-        <SiteHeader onToggleSidebar={() => setOpen((o) => !o)} />
+        <SiteHeader onToggleSidebar={() => setOpen((o) => !o)} title={getPageTitle(active)} />
         <main className="flex-1">{children}</main>
         <SiteFooter />
       </div>
