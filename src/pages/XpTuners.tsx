@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import {
   CHECKPOINTS,
   totalXp,
@@ -34,81 +34,17 @@ function buildBalance(res: Resources, cpIdx: number): BalanceState {
   return { cp, byXp, byTuners, bySc, maxTest, maxVal, bal, ratioDisplay }
 }
 
-type SimResult = { kind: 'success' | 'fail'; verdict: string; detail: string }
-
-function runSim(count: number, res: Resources, cpIdx: number): SimResult {
-  const cp = CHECKPOINTS[cpIdx]
-  const cpNext = cpIdx < 4 ? CHECKPOINTS[cpIdx + 1] : null
-
-  if (count <= 0) {
-    return { kind: 'fail', verdict: 'Invalid number', detail: 'Enter at least 1 echo to simulate.' }
-  }
-
-  const costXp = count * cp.xp
-  const costTuners = count * cp.tuners
-  const costSc = count * cp.sc
-  const canAfford = res.xp >= costXp && res.tuners >= costTuners && res.sc >= costSc
-  const remainingXp = res.xp - costXp
-  const remainingTuners = res.tuners - costTuners
-  const remainingSc = res.sc - costSc
-  const expectedGood = Math.floor(count * 0.4)
-  const expectedBad = count - expectedGood
-
-  if (canAfford) {
-    let detail = `Testing ${count} echo${count > 1 ? 'es' : ''} to <strong>${cp.label}</strong> costs <strong>${fmt(costXp)} XP</strong> + <strong>${costTuners} Tuners</strong> + <strong>${fmt(costSc)} SC</strong>. `
-    detail += `After rolling: <strong>${fmt(Math.max(0, remainingXp))} XP</strong>, <strong>${Math.max(0, remainingTuners)} Tuners</strong>, <strong>${fmt(Math.max(0, remainingSc))} SC</strong> remain.`
-
-    if (cpNext && expectedGood > 0) {
-      const legXp = cpNext.xp - cp.xp
-      const legTuners = cpNext.tuners - cp.tuners
-      const legSc = cpNext.sc - cp.sc
-      detail += `<br>Expected: ~<strong>${expectedGood}</strong> echo${expectedGood > 1 ? 'es' : ''} have good substats. `
-      if (remainingXp >= expectedGood * legXp && remainingTuners >= expectedGood * legTuners && remainingSc >= expectedGood * legSc) {
-        detail += `You can afford to push all ${expectedGood} good ones to ${cpNext.label}.`
-      } else {
-        const px = Math.floor(remainingXp / legXp)
-        const pt = Math.floor(remainingTuners / legTuners)
-        const ps = Math.floor(remainingSc / legSc)
-        const p = Math.min(px, pt, ps, expectedGood)
-        detail += p > 0 ? `You can push <strong>${p}</strong> of them to ${cpNext.label}.` : `No resources left to push any to ${cpNext.label}.`
-      }
-    } else if (expectedGood > 0 && !cpNext) {
-      detail += `<br>Expected: ~<strong>${expectedGood}</strong> already maxed out.`
-    }
-
-    detail += `<br>Failed echoes (${expectedBad}) can be fed as fodder for ~70% XP back.`
-    return { kind: 'success', verdict: '\u2713 You can afford this', detail }
-  }
-
-  const shortages: string[] = []
-  if (res.xp < costXp) shortages.push(`${fmt(costXp - res.xp)} more XP`)
-  if (res.tuners < costTuners) shortages.push(`${costTuners - res.tuners} more Tuners`)
-  if (res.sc < costSc) shortages.push(`${fmt(costSc - res.sc)} more SC`)
-  return { kind: 'fail', verdict: '\u2717 Not enough resources', detail: `You need ${shortages.join(', ')} to test ${count} echo${count > 1 ? 'es' : ''} to ${cp.label}.` }
-}
-
 export function XpTuners() {
   const [tubes, setTubes] = useState({ basic: 0, medium: 0, advanced: 0, premium: 16 })
   const [tuners, setTuners] = useState(12)
   const [sc, setSc] = useState(100000)
   const [cpIdx, setCpIdx] = useState(1)
-  const [simCount, setSimCount] = useState(3)
-  const [simResult, setSimResult] = useState<SimResult | null>(null)
 
   const res: Resources = useMemo(
     () => ({ xp: totalXp(tubes), tuners, sc }),
     [tubes, tuners, sc],
   )
   const b = useMemo(() => buildBalance(res, cpIdx), [res, cpIdx])
-
-  useEffect(() => {
-    setSimResult(runSim(3, res, cpIdx))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  function runSimNow() {
-    setSimResult(runSim(simCount, res, cpIdx))
-  }
 
   function setTube(key: 'basic' | 'medium' | 'advanced' | 'premium', v: number) {
     setTubes((prev) => ({ ...prev, [key]: v }))
@@ -185,38 +121,6 @@ export function XpTuners() {
             </div>
           ))}
         </div>
-      </section>
-
-      {/* Simulator */}
-      <section className="card mt-4 pb-3">
-        <h2 className="card-title">Strategy Simulator</h2>
-        <p className="mb-3 text-sm text-muted">
-          Smart strategy: level to <strong className="text-text">{b.cp.label}</strong>, tune substats, stop if bad (~60% chance).
-          <br />
-          If good (~40% chance), consider pushing further.
-        </p>
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="min-w-[140px]">
-            <label className="label">Echoes to test to <span className="text-text">{b.cp.label}</span></label>
-            <input className="input w-28" type="number" min={0} value={simCount} onChange={(e) => setSimCount(parseInt(e.target.value) || 0)} />
-          </div>
-          <button className="btn" style={{ background: '#1a6bb0', borderColor: '#1a6bb0', color: '#fff', fontWeight: 700 }} onClick={runSimNow}>
-            Simulate
-          </button>
-        </div>
-
-        {simResult && (
-          <div
-            className={`mt-3 rounded-lg border px-4 py-3.5 ${
-              simResult.kind === 'success' ? 'border-success/40 bg-success/10' : 'border-danger/40 bg-danger/10'
-            }`}
-          >
-            <div className="mb-1 text-lg font-bold" style={{ color: simResult.kind === 'success' ? 'var(--color-success)' : 'var(--color-danger)' }}>
-              {simResult.verdict}
-            </div>
-            <p className="text-sm leading-relaxed text-muted" dangerouslySetInnerHTML={{ __html: simResult.detail }} />
-          </div>
-        )}
       </section>
     </div>
   )
