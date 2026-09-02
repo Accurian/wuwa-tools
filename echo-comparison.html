@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WuWa Echo Substat Comparison</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0e17;
+  --bg2: #111827;
+  --card-bg: #131c2e;
+  --card-border: #1e2d4a;
+  --gold: #c9a53c;
+  --gold-dim: #8a7230;
+  --gold-glow: rgba(201, 165, 60, 0.25);
+  --teal: #4fc3c4;
+  --text: #e8e6e3;
+  --text-dim: #8892a0;
+  --red: #ef4444;
+  --orange: #f59e0b;
+  --yellow: #eab308;
+  --green: #22c55e;
+  --blue: #3b82f6;
+  --purple: #a855f7;
+}
+html { font-size: 14px; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 20px;
+  background-image: radial-gradient(ellipse at 50% 0%, rgba(79,195,196,0.04) 0%, transparent 70%);
+}
+.container { max-width: 1600px; margin: 0 auto; }
+.header {
+  text-align: center;
+  padding: 24px 0 28px;
+  position: relative;
+}
+.header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  background: linear-gradient(135deg, var(--gold), #fff4d6, var(--gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.header .subtitle {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin-top: 4px;
+  letter-spacing: 0.03em;
+}
+.controls-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0 16px;
+  flex-wrap: wrap;
+}
+.layout-wrap {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.echo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+  flex: 1;
+  min-width: 0;
+}
+@media (min-width: 1100px) {
+  .echo-grid { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+}
+.sidebar {
+  display: none;
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 14px;
+  position: sticky;
+  top: 12px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+.sidebar.open { display: block; }
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.sidebar-header h3 {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.sidebar-close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0 4px;
+  line-height: 1;
+}
+.sidebar-close:hover { color: var(--red); }
+.sidebar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sidebar-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.sidebar-row label {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  min-width: 55px;
+  flex-shrink: 0;
+}
+.sidebar-row .weight-input {
+  width: 56px;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid var(--card-border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 2px 4px;
+  font-size: 0.75rem;
+  font-family: inherit;
+  outline: none;
+  text-align: center;
+  transition: 0.2s;
+  margin-left: auto;
+}
+.sidebar-row .weight-input:focus { border-color: var(--gold); }
+.sidebar-row .weight-input::placeholder { color: var(--text-dim); font-size: 0.65rem; }
+.sidebar-row .weight-input::-webkit-outer-spin-button,
+.sidebar-row .weight-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.sidebar-row .weight-input[type=number] { -moz-appearance: textfield; }
+.chart-section {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.chart-section h4 {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+.chart-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+  height: 18px;
+}
+.chart-bar-label {
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  min-width: 38px;
+  text-align: right;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chart-bar-track {
+  flex: 1;
+  height: 10px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.04);
+  overflow: hidden;
+}
+.chart-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s;
+  min-width: 2px;
+}
+.chart-bar-val {
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  min-width: 34px;
+  flex-shrink: 0;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  user-select: none;
+}
+.btn:hover { border-color: var(--gold-dim); background: #1a2640; }
+.btn:active { transform: scale(0.97); }
+.btn-primary {
+  background: var(--gold);
+  color: #0a0e17;
+  border-color: var(--gold);
+  font-weight: 600;
+}
+.btn-primary:hover { background: #dbb84a; border-color: #dbb84a; }
+.toggle-btn.active { background: var(--gold); color: #0a0e17; border-color: var(--gold); font-weight: 600; }
+.btn-danger { color: var(--red); border-color: rgba(239,68,68,0.3); }
+.btn-danger:hover { border-color: var(--red); background: rgba(239,68,68,0.1); }
+.btn-sm { padding: 4px 10px; font-size: 0.78rem; }
+.preset-select {
+  padding: 8px 12px;
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.2s;
+  max-width: 200px;
+}
+.preset-select:hover { border-color: var(--gold-dim); }
+.preset-select option { background: var(--card-bg); color: var(--text); }
+.btn-icon { width: 28px; height: 28px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+.echo-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 16px;
+  position: relative;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+}
+.echo-card:hover { border-color: rgba(201,165,60,0.3); }
+.echo-card.best {
+  border-color: var(--gold);
+  box-shadow: 0 0 20px var(--gold-glow), inset 0 0 20px rgba(201,165,60,0.04);
+}
+.echo-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.echo-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.echo-title .name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: text;
+  outline: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s;
+}
+.echo-title .name:focus {
+  border-bottom-color: var(--gold);
+}
+.echo-title .badge {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(201,165,60,0.15);
+  color: var(--gold);
+  border: 1px solid rgba(201,165,60,0.2);
+  font-weight: 600;
+}
+.echo-card-header .remove-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: 0.2s;
+  line-height: 1;
+}
+.echo-card-header .remove-btn:hover { color: var(--red); background: rgba(239,68,68,0.1); }
+.substat-row {
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+  transition: 0.2s;
+}
+.substat-row:hover { background: rgba(255,255,255,0.04); }
+.substat-row.filled { border-color: rgba(201,165,60,0.15); }
+.substat-select-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.substat-select {
+  flex: 1;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--card-border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 5px 8px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: 0.2s;
+}
+.substat-select:focus { border-color: var(--gold); }
+.substat-select option { background: #111827; color: var(--text); }
+.substat-select option:disabled { color: var(--text-dim); }
+.value-tiles {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.value-tile {
+  padding: 5px 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  background: rgba(0,0,0,0.3);
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  user-select: none;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.value-tile:hover {
+  border-color: rgba(255,255,255,0.3);
+  color: var(--text);
+  background: rgba(255,255,255,0.05);
+}
+.value-tile.median {
+  border-color: rgba(201,165,60,0.3);
+  color: var(--gold-dim);
+  position: relative;
+}
+.value-tile.median::after {
+  content: 'M';
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  font-size: 0.5rem;
+  background: var(--gold);
+  color: #0a0e17;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+.value-tile.selected {
+  background: var(--gold);
+  color: #0a0e17;
+  border-color: var(--gold);
+  font-weight: 700;
+  box-shadow: 0 0 8px rgba(201,165,60,0.3);
+}
+.value-tile.selected.median { background: var(--gold); color: #0a0e17; border-color: var(--gold); }
+.value-tile.selected.median::after { background: #0a0e17; color: var(--gold); }
+.substat-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 0.72rem;
+}
+.substat-quality {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+.substat-quality-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s, background 0.3s;
+}
+.substat-quality-text {
+  font-weight: 600;
+  min-width: 36px;
+  text-align: right;
+  font-size: 0.72rem;
+}
+.substat-row .tier-label {
+  font-size: 0.65rem;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+.echo-footer {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.echo-score {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.echo-score-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.echo-score-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  transition: color 0.3s;
+}
+.echo-score-bar {
+  flex: 1;
+  max-width: 140px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+.echo-score-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s, background 0.3s;
+}
+.echo-card.best .echo-score-value { color: var(--gold); }
+.crown-badge {
+  display: none;
+  color: var(--gold);
+  font-size: 1.2rem;
+}
+.echo-card.best .crown-badge { display: inline-block; }
+.echo-score-bar { display: none; }
+.contrib-section {
+  padding: 10px 0 6px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  margin-top: 4px;
+}
+.contrib-header {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+.contrib-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+}
+.contrib-label {
+  font-size: 0.72rem;
+  color: var(--text);
+  min-width: 60px;
+  flex-shrink: 0;
+}
+.contrib-bar-track {
+  flex: 1;
+  height: 5px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.contrib-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--gold);
+  opacity: 0.7;
+  transition: width 0.3s;
+}
+.contrib-value {
+  font-size: 0.72rem;
+  color: var(--gold);
+  min-width: 44px;
+  text-align: right;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.summary-section {
+  margin-top: 8px;
+  padding: 16px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+}
+.summary-section h3 {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+.summary-table th {
+  text-align: left;
+  padding: 4px 8px;
+  color: var(--text-dim);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-weight: 500;
+}
+.summary-table td {
+  padding: 4px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.summary-table .best-val { color: var(--gold); font-weight: 600; }
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+.empty-state .icon { font-size: 2.5rem; margin-bottom: 10px; }
+.tooltip {
+  position: relative;
+  cursor: help;
+}
+.tooltip:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a2640;
+  color: var(--text);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  border: 1px solid var(--card-border);
+  z-index: 10;
+}
+@media (max-width: 700px) {
+  body { padding: 10px; }
+  .echo-grid { grid-template-columns: 1fr; }
+  .value-tile { padding: 4px 8px; font-size: 0.75rem; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>ECHO SUBSTAT COMPARISON</h1>
+    <div class="subtitle">Wuthering Waves &mdash; Compare echo roll quality</div>
+  </div>
+  <div class="controls-bar">
+    <button class="btn btn-primary" onclick="addEcho()">+ Add Echo</button>
+    <select class="preset-select" id="presetSelect" onchange="loadPreset(this.value)">
+      <option value="">Presets</option>
+    </select>
+    <button class="btn toggle-btn" onclick="toggleWeights()" id="weightsBtn">Substat Value</button>
+    <button class="btn" onclick="resetAll()">Reset All</button>
+    <span id="statusBar" style="color:var(--text-dim);font-size:0.78rem;margin-left:8px"></span>
+  </div>
+  <div id="app"></div>
+</div>
+<script>
+const SUBSTATS = {
+  'ATK': {
+    values: [30, 40, 50, 60],
+    median: 50,
+    format: (v) => v,
+    chance: [9.36, 50.06, 37.83, 2.75],
+    tierLabels: ['Low', 'Mid', 'High', 'Max']
+  },
+  'HP': {
+    values: [320, 360, 390, 430, 470, 510, 540, 580],
+    median: 450,
+    format: (v) => v,
+    chance: [7.23, 7.55, 19.73, 25.05, 17.81, 14.92, 6.17, 2.84],
+    tierLabels: ['Very Low','Low','Below Avg','Average','Above Avg','High','Very High','Max']
+  },
+  'DEF': {
+    values: [40, 50, 60, 70],
+    median: 50,
+    format: (v) => v,
+    chance: [9.36, 50.06, 37.83, 2.75],
+    tierLabels: ['Low', 'Mid', 'High', 'Max']
+  },
+  'ATK%': {
+    values: [6.4, 7.1, 7.9, 8.6, 9.4, 10.1, 10.9, 11.6],
+    median: 9.0,
+    format: (v) => v + '%',
+    chance: [7.23, 7.55, 19.73, 25.05, 17.81, 14.92, 6.17, 2.84],
+    tierLabels: ['Very Low','Low','Below Avg','Average','Above Avg','High','Very High','Max']
+  },
+  'HP%': {
+    values: [6.4, 7.1, 7.9, 8.6, 9.4, 10.1, 10.9, 11.6],
+    median: 9.0,
+    format: (v) => v + '%',
+    chance: [7.23, 7.55, 19.73, 25.05, 17.81, 14.92, 6.17, 2.84],
+    tierLabels: ['Very Low','Low','Below Avg','Average','Above Avg','High','Very High','Max']
+  },
+  'DEF%': {
+    values: [8.1, 9.0, 10.0, 10.9, 11.8, 12.8, 13.8, 14.7],
+    median: 11.39,
+    format: (v) => v + '%',
+    chance: [7.23, 7.55, 19.73, 25.05, 17.81, 14.92, 6.17, 2.84],
+    tierLabels: ['Very Low','Low','Below Avg','Average','Above Avg','High','Very High','Max']
+  },
+  'Energy Regen': {
+    values: [6.8, 7.6, 8.4, 9.2, 10.0, 10.8, 11.6, 12.4],
+    median: 10.25,
+    format: (v) => v + '%',
+    chance: [7.23, 7.55, 19.73, 25.05, 17.81, 14.92, 6.17, 2.84],
+    tierLabels: ['Very Low','Low','Below Avg','Average','Above Avg','High','Very High','Max']
+  },
+  'Crit. Rate': {
+    values: [6.3, 6.9, 7.5, 8.1, 8.7, 9.3, 9.9, 10.5],
+    median: 8.4,
+    format: (v) => v + '%',
+    chance: [22.58, 22.05, 23.97, 9.02, 7.24, 7.72, 3.74, 3.69],
+    tierLabels: ['Very Low','Low','Below Avg','Average','Above Avg','High','Very High','Max']
+  },
+  'Crit. DMG': {
+    values: [12.6, 13.8, 15.0, 16.2, 17.4, 18.6, 19.8, 21.0],
+    median: 16.8,
+    format: (v) => v + '%',
+    chance: [22.58, 22.05, 23.97, 9.02, 7.24, 7.72, 3.74, 3.69],
+    tierLabels: ['Very Low','Low','Below Avg','Average','Above Avg','High','Very High','Max']
+  },
+  'Basic ATK DMG Bonus': {
+    values: [6.4, 7.1, 7.9, 8.6, 9.4, 10.1, 10.9, 11.6],
+    median: 9.0,
+    format: (v) => v + '%',
+    chance: [7.23, 7.55, 19.73, 25.05, 17.81, 14.92, 6.17, 2.84],
+    tierLabels: ['Very Low','Low','Below Avg','Average','Above Avg','High','Very High','Max']
+  },
+  'Heavy ATK DMG Bonus': {
+    values: [6.4, 7.1, 7.9, 8.6, 9.4, 10.1, 10.9, 11.6],
+    median: 9.0,
+    format: (v) => v + '%',
+    chance: [7.23, 7.55, 19.73, 25.05, 17.81, 14.92, 6.17, 2.84],
+    tierLabels: ['Very Low','Low','Below Avg','Average','Above Avg','High','Very High','Max']
+  },
+  'Res. Skill DMG Bonus': {
+    values: [6.4, 7.1, 7.9, 8.6, 9.4, 10.1, 10.9, 11.6],
+    median: 9.0,
+    format: (v) => v + '%',
+    chance: [7.23, 7.55, 19.73, 25.05, 17.81, 14.92, 6.17, 2.84],
+    tierLabels: ['Very Low','Low','Below Avg','Average','Above Avg','High','Very High','Max']
+  },
+  'Res. Liberation DMG Bonus': {
+    values: [6.4, 7.1, 7.9, 8.6, 9.4, 10.1, 10.9, 11.6],
+    median: 9.0,
+    format: (v) => v + '%',
+    chance: [7.23, 7.55, 19.73, 25.05, 17.81, 14.92, 6.17, 2.84],
+    tierLabels: ['Very Low','Low','Below Avg','Average','Above Avg','High','Very High','Max']
+  }
+};
+
+const STAT_CONFIG = [
+  { key: 'Crit. DMG', display: 'Crit DMG' },
+  { key: 'Crit. Rate', display: 'Crit Rate' },
+  { key: 'ATK%', display: 'ATK%' },
+  { key: 'ATK', display: 'Flat ATK' },
+  { key: 'Energy Regen', display: 'ER' },
+  { key: 'Basic ATK DMG Bonus', display: 'Basic' },
+  { key: 'Heavy ATK DMG Bonus', display: 'Heavy' },
+  { key: 'Res. Skill DMG Bonus', display: 'Res Skill' },
+  { key: 'Res. Liberation DMG Bonus', display: 'Res Lib' },
+  { key: 'DEF%', display: 'DEF%' },
+  { key: 'DEF', display: 'DEF' },
+  { key: 'HP%', display: 'HP%' },
+  { key: 'HP', display: 'HP' }
+];
+const STAT_NAMES = STAT_CONFIG.map(c => c.key);
+const DISPLAY_MAP = {};
+for (const c of STAT_CONFIG) { DISPLAY_MAP[c.key] = c.display; }
+function getDisplay(key) { return DISPLAY_MAP[key] || key; }
+function isPercentStat(key) { return key !== 'ATK' && key !== 'HP' && key !== 'DEF'; }
+
+function findClosestValueIndex(substatName, inputValue) {
+  const s = SUBSTATS[substatName];
+  if (!s) return -1;
+  let bestIdx = 0;
+  let bestDiff = Infinity;
+  for (let i = 0; i < s.values.length; i++) {
+    const diff = Math.abs(s.values[i] - inputValue);
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      bestIdx = i;
+    }
+  }
+  return bestIdx;
+}
+
+function calcQuality(substatName, valueIndex) {
+  const s = SUBSTATS[substatName];
+  if (!s || valueIndex < 0) return 0;
+  const maxIdx = s.values.length - 1;
+  return maxIdx > 0 ? (valueIndex / maxIdx) * 100 : 0;
+}
+
+function getQualityColor(pct) {
+  if (pct >= 85) return '#22c55e';
+  if (pct >= 65) return '#4fc3c4';
+  if (pct >= 40) return '#eab308';
+  if (pct >= 20) return '#f59e0b';
+  return '#ef4444';
+}
+
+function getTierLabel(substatName, valueIndex) {
+  const s = SUBSTATS[substatName];
+  if (!s || valueIndex < 0) return '';
+  const labels = s.tierLabels;
+  if (valueIndex < labels.length) return labels[valueIndex];
+  return '';
+}
+
+function getTierColor(label) {
+  const map = {
+    'Low': '#ef4444',
+    'Very Low': '#ef4444',
+    'Below Avg': '#f59e0b',
+    'Mid': '#eab308',
+    'Average': '#eab308',
+    'Above Avg': '#4fc3c4',
+    'High': '#4fc3c4',
+    'Very High': '#22c55e',
+    'Max': '#22c55e'
+  };
+  return map[label] || '#8892a0';
+}
+
+let echoState = [];
+let nextId = 1;
+let weightsOpen = false;
+let charWeights = {};
+for (const name of STAT_NAMES) { charWeights[name] = 0; }
+
+const PRESETS = {
+  '': { label: 'Custom (no preset)', weights: {} },
+  'suisui': {
+    label: 'Suisui',
+    weights: { 'Crit. DMG': 2.39, 'Crit. Rate': 1.41, 'Basic ATK DMG Bonus': 1.10, 'Res. Skill DMG Bonus': 0.29, 'HP': 0.42, 'HP%': 1.33, 'ATK%': 0.63, 'ATK': 0.45 }
+  },
+  'xuanling': {
+    label: 'Xuanling',
+    weights: { 'Crit. DMG': 4.07, 'Crit. Rate': 5.09, 'ATK%': 2.40, 'ATK': 1.17, 'Basic ATK DMG Bonus': 0.09, 'Heavy ATK DMG Bonus': 2.48 }
+  },
+  'qingxiao': {
+    label: 'Qingxiao',
+    weights: { 'Crit. DMG': 5.77, 'Crit. Rate': 5.26, 'ATK%': 2.54, 'ATK': 1.29, 'Basic ATK DMG Bonus': 0.46, 'Res. Skill DMG Bonus': 0.06, 'Res. Liberation DMG Bonus': 0.56, 'Heavy ATK DMG Bonus': 0.67 }
+  },
+  'jingran': {
+    label: 'Jingran',
+    weights: { 'Crit. DMG': 6.39, 'Crit. Rate': 7.29, 'ATK%': 1.56, 'ATK': 1.07, 'Basic ATK DMG Bonus': 0.02, 'Res. Skill DMG Bonus': 0.10, 'Res. Liberation DMG Bonus': 0.04, 'Heavy ATK DMG Bonus': 1.82, 'HP': 0.02, 'HP%': 0.66, 'Energy Regen': 0.04 }
+  },
+  'lucilla': {
+    label: 'Lucilla',
+    weights: { 'Crit. DMG': 4.97, 'Crit. Rate': 4.58, 'ATK%': 2.41, 'ATK': 1.23, 'Basic ATK DMG Bonus': 1.96, 'Res. Skill DMG Bonus': 0.42 }
+  },
+  'hiyuki': {
+    label: 'Hiyuki',
+    weights: { 'Crit. DMG': 4.79, 'Crit. Rate': 4.42, 'ATK%': 2.38, 'ATK': 1.11, 'Basic ATK DMG Bonus': 0.03, 'Res. Skill DMG Bonus': 0.11, 'Res. Liberation DMG Bonus': 2.08 }
+  },
+  'buling': {
+    label: 'Buling',
+    weights: { 'Crit. DMG': 2.27, 'Crit. Rate': 1.77, 'ATK%': 1.28, 'ATK': 0.90, 'Basic ATK DMG Bonus': 0.46, 'Res. Skill DMG Bonus': 0.16, 'Res. Liberation DMG Bonus': 1.17, 'Heavy ATK DMG Bonus': 0.12 }
+  },
+  'jinhsi': {
+    label: 'Jinhsi',
+    weights: { 'Crit. DMG': 3.57, 'Crit. Rate': 5.67, 'ATK%': 3.11, 'ATK': 1.54, 'Basic ATK DMG Bonus': 0.17, 'Res. Skill DMG Bonus': 2.05, 'Res. Liberation DMG Bonus': 0.46, 'Heavy ATK DMG Bonus': 0.04 }
+  },
+  'aemeath-rupture': {
+    label: 'Aemeath (Rupture)',
+    weights: { 'Crit. DMG': 4.87, 'Crit. Rate': 4.45, 'ATK%': 2.01, 'ATK': 1.00, 'Basic ATK DMG Bonus': 0.20, 'Res. Skill DMG Bonus': 0.06, 'Res. Liberation DMG Bonus': 1.62 }
+  },
+  'aemeath-fusion': {
+    label: 'Aemeath (Fusion Burst)',
+    weights: { 'Crit. DMG': 4.48, 'Crit. Rate': 4.43, 'ATK%': 2.31, 'ATK': 1.12, 'Basic ATK DMG Bonus': 0.26, 'Res. Liberation DMG Bonus': 1.88 }
+  },
+  'lucy': {
+    label: 'Lucy',
+    weights: { 'Crit. DMG': 4.88, 'Crit. Rate': 5.77, 'ATK%': 2.38, 'ATK': 1.15, 'Basic ATK DMG Bonus': 0.05, 'Res. Skill DMG Bonus': 0.12, 'Heavy ATK DMG Bonus': 1.93 }
+  },
+  'rebecca': {
+    label: 'Rebecca',
+    weights: { 'Crit. DMG': 3.80, 'Crit. Rate': 5.48, 'ATK%': 2.05, 'ATK': 1.12, 'Basic ATK DMG Bonus': 1.78, 'Res. Skill DMG Bonus': 0.16 }
+  },
+  'denia': {
+    label: 'Denia',
+    weights: { 'Crit. DMG': 5.64, 'Crit. Rate': 5.37, 'ATK%': 2.74, 'ATK': 1.42, 'Basic ATK DMG Bonus': 0.16, 'Res. Liberation DMG Bonus': 2.61, 'Res. Skill DMG Bonus': 0.01 }
+  },
+  'sigrika': {
+    label: 'Sigrika',
+    weights: { 'Crit. DMG': 4.57, 'Crit. Rate': 5.42, 'ATK%': 2.46, 'ATK': 1.17, 'Basic ATK DMG Bonus': 0.14, 'Res. Skill DMG Bonus': 0.03, 'Energy Regen': 2.23 }
+  },
+  'luuk': {
+    label: 'Luuk',
+    weights: { 'Crit. DMG': 5.71, 'Crit. Rate': 6.13, 'ATK%': 2.73, 'ATK': 1.31, 'Basic ATK DMG Bonus': 2.21 }
+  },
+  'lynae': {
+    label: 'Lynae',
+    weights: { 'Crit. DMG': 4.10, 'Crit. Rate': 4.04, 'ATK%': 2.11, 'ATK': 1.08, 'Basic ATK DMG Bonus': 1.31, 'Res. Skill DMG Bonus': 0.15, 'Res. Liberation DMG Bonus': 0.49 }
+  },
+  'mornye': {
+    label: 'Mornye',
+    weights: { 'Crit. DMG': 3.79, 'Crit. Rate': 1.75, 'ATK%': 1.40, 'ATK': 0.90, 'DEF%': 2.78, 'DEF': 1.16, 'Basic ATK DMG Bonus': 0.33, 'Res. Skill DMG Bonus': 0.20, 'Res. Liberation DMG Bonus': 3.88, 'Heavy ATK DMG Bonus': 0.32, 'Energy Regen': 3.52 }
+  },
+  'chisa': {
+    label: 'Chisa',
+    weights: { 'Crit. DMG': 5.24, 'Crit. Rate': 5.06, 'ATK%': 3.44, 'ATK': 1.86, 'Basic ATK DMG Bonus': 0.08, 'Res. Skill DMG Bonus': 0.14, 'Res. Liberation DMG Bonus': 2.34 }
+  },
+  'qiuyuan': {
+    label: 'Qiuyuan',
+    weights: { 'Crit. DMG': 6.91, 'Crit. Rate': 6.42, 'ATK%': 3.62, 'ATK': 1.90, 'Heavy ATK DMG Bonus': 1.93 }
+  },
+  'qiuyuan-2x-forte': {
+    label: 'Qiuyuan (2x Forte)',
+    weights: { 'Crit. DMG': 6.91, 'Crit. Rate': 6.42, 'ATK%': 3.62, 'ATK': 1.90, 'Heavy ATK DMG Bonus': 1.93 }
+  },
+  'phrolova': {
+    label: 'Phrolova',
+    weights: { 'Crit. DMG': 5.02, 'Crit. Rate': 5.10, 'ATK%': 2.64, 'ATK': 1.25, 'Basic ATK DMG Bonus': 0.15, 'Res. Skill DMG Bonus': 1.45 }
+  },
+  'galbrena': {
+    label: 'Galbrena',
+    weights: { 'Crit. DMG': 4.93, 'Crit. Rate': 5.70, 'ATK%': 2.45, 'ATK': 1.18, 'Heavy ATK DMG Bonus': 2.45 }
+  },
+  'iuno-mdps': {
+    label: 'Iuno MDPS',
+    weights: { 'Crit. DMG': 4.41, 'Crit. Rate': 6.23, 'ATK%': 3.04, 'ATK': 1.62, 'Basic ATK DMG Bonus': 0.17, 'Res. Skill DMG Bonus': 0.55, 'Res. Liberation DMG Bonus': 2.30 }
+  },
+  'carlotta': {
+    label: 'Carlotta',
+    weights: { 'Crit. DMG': 4.36, 'Crit. Rate': 6.43, 'ATK%': 2.93, 'ATK': 1.54, 'Basic ATK DMG Bonus': 0.03, 'Res. Skill DMG Bonus': 2.10 }
+  },
+  'camellya': {
+    label: 'Camellya',
+    weights: { 'Crit. DMG': 6.14, 'Crit. Rate': 4.47, 'ATK%': 2.78, 'ATK': 1.36, 'Basic ATK DMG Bonus': 1.84, 'Res. Liberation DMG Bonus': 0.36 }
+  },
+  'zani': {
+    label: 'Zani',
+    weights: { 'Crit. DMG': 4.04, 'Crit. Rate': 6.95, 'ATK%': 3.23, 'ATK': 1.59, 'Basic ATK DMG Bonus': 0.08, 'Res. Skill DMG Bonus': 0.22, 'Res. Liberation DMG Bonus': 0.42, 'Heavy ATK DMG Bonus': 2.47 }
+  },
+  'xly': {
+    label: 'XLY',
+    weights: { 'Crit. DMG': 6.09, 'Crit. Rate': 4.51, 'ATK%': 3.10, 'ATK': 1.55, 'Basic ATK DMG Bonus': 0.23, 'Res. Skill DMG Bonus': 0.48, 'Res. Liberation DMG Bonus': 1.67 }
+  },
+  'ciaconna': {
+    label: 'Ciaconna',
+    weights: { 'Crit. DMG': 3.47, 'Crit. Rate': 5.49, 'ATK%': 3.14, 'ATK': 1.82, 'Basic ATK DMG Bonus': 0.99, 'Res. Skill DMG Bonus': 0.17, 'Res. Liberation DMG Bonus': 1.31, 'Heavy ATK DMG Bonus': 0.74 }
+  },
+  'cartethiya': {
+    label: 'Cartethiya',
+    weights: { 'Crit. DMG': 1.51, 'Crit. Rate': 5.20, 'ATK%': 0.07, 'ATK': 0.05, 'HP%': 2.42, 'HP': 0.89, 'Basic ATK DMG Bonus': 1.70, 'Res. Skill DMG Bonus': 0.34, 'Res. Liberation DMG Bonus': 0.84 }
+  },
+  'augusta': {
+    label: 'Augusta',
+    weights: { 'Crit. DMG': 6.69, 'Crit. Rate': 5.63, 'ATK%': 2.72, 'ATK': 1.16, 'Res. Skill DMG Bonus': 0.40, 'Heavy ATK DMG Bonus': 2.67 }
+  },
+  'lupa': {
+    label: 'Lupa',
+    weights: { 'Crit. DMG': 4.30, 'Crit. Rate': 5.75, 'ATK%': 3.21, 'ATK': 1.66, 'Basic ATK DMG Bonus': 0.16, 'Res. Skill DMG Bonus': 0.35, 'Res. Liberation DMG Bonus': 2.15, 'Heavy ATK DMG Bonus': 0.22 }
+  },
+  'iuno': {
+    label: 'Iuno',
+    weights: { 'Crit. DMG': 6.29, 'Crit. Rate': 5.40, 'ATK%': 2.99, 'ATK': 1.68, 'Res. Skill DMG Bonus': 0.30, 'Res. Liberation DMG Bonus': 2.80 }
+  }
+};
+
+function createSubstatSlot(echoId, slotIdx) {
+  return { echoId, slotIdx, statName: null, valueIndex: -1 };
+}
+
+function createEcho() {
+  const id = nextId++;
+  const slots = [];
+  for (let i = 0; i < 5; i++) {
+    slots.push(createSubstatSlot(id, i));
+  }
+  return { id, name: 'Echo ' + id, slots };
+}
+
+function initState() {
+  echoState = [createEcho(), createEcho()];
+}
+
+function getUsedStatNames(echoId) {
+  const echo = echoState.find(e => e.id === echoId);
+  if (!echo) return [];
+  return echo.slots.filter(s => s.statName).map(s => s.statName);
+}
+
+function findBestEcho() {
+  let bestId = null;
+  let bestScore = -1;
+  for (const echo of echoState) {
+    const score = calcEchoScore(echo.id);
+    if (score > bestScore) {
+      bestScore = score;
+      bestId = echo.id;
+    }
+  }
+  return bestId;
+}
+
+function calcEchoScore(echoId) {
+  const echo = echoState.find(e => e.id === echoId);
+  if (!echo) return 0;
+  let total = 0;
+  for (const slot of echo.slots) {
+    if (!slot.statName || slot.valueIndex < 0) continue;
+    const s = SUBSTATS[slot.statName];
+    if (!s || slot.valueIndex >= s.values.length) continue;
+    const weight = charWeights[slot.statName] || 1;
+    total += weight * (s.values[slot.valueIndex] / s.median);
+  }
+  if (total === 0) return 0;
+  return Math.round(total * 100) / 100;
+}
+
+function addEcho() {
+  if (echoState.length >= 10) return;
+  echoState.push(createEcho());
+  render();
+}
+
+function removeEcho(echoId) {
+  if (echoState.length <= 1) return;
+  echoState = echoState.filter(e => e.id !== echoId);
+  render();
+}
+
+function setSubstat(echoId, slotIdx, statName) {
+  const echo = echoState.find(e => e.id === echoId);
+  if (!echo) return;
+  const slot = echo.slots[slotIdx];
+  if (slot.statName === statName) return;
+  const used = getUsedStatNames(echoId).filter(s => s !== slot.statName);
+  if (statName && used.includes(statName)) return;
+  slot.statName = statName;
+  slot.valueIndex = -1;
+  if (statName) {
+    const s = SUBSTATS[statName];
+    if (s) {
+      const medianIdx = findClosestValueIndex(statName, s.median);
+      slot.valueIndex = medianIdx >= 0 ? medianIdx : 0;
+    }
+  }
+  render();
+}
+
+function setValue(echoId, slotIdx, valueIndex) {
+  const echo = echoState.find(e => e.id === echoId);
+  if (!echo) return;
+  const slot = echo.slots[slotIdx];
+  if (!slot.statName) return;
+  slot.valueIndex = valueIndex;
+  render();
+}
+
+function buildChartHTML() {
+  const maxVal = Math.max(...Object.values(charWeights), 0.01);
+  let html = '<div class="chart-section"><h4>Value Distribution</h4>';
+  const entries = STAT_NAMES.map(n => ({ name: n, val: charWeights[n] || 0 }));
+  entries.sort((a, b) => b.val - a.val);
+  for (const e of entries) {
+    if (e.val <= 0) continue;
+    const pct = (e.val / maxVal) * 100;
+    const color = getQualityColor((e.val / Math.max(...entries.map(x => x.val), 0.01)) * 100);
+    const shortName = getDisplay(e.name);
+    html += `<div class="chart-bar-row">
+      <span class="chart-bar-label">${shortName}</span>
+      <div class="chart-bar-track"><div class="chart-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <span class="chart-bar-val">${e.val.toFixed(2)}</span>
+    </div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function toggleWeights() {
+  weightsOpen = !weightsOpen;
+  const btn = document.getElementById('weightsBtn');
+  if (btn) {
+    btn.textContent = 'Substat Value';
+    btn.classList.toggle('active', weightsOpen);
+  }
+  render();
+}
+
+function loadPreset(key) {
+  if (!key || !PRESETS[key]) return;
+  const preset = PRESETS[key];
+  for (const name of STAT_NAMES) {
+    charWeights[name] = preset.weights[name] || 0;
+  }
+  render();
+}
+
+function setWeight(name, val) {
+  const parsed = parseFloat(val);
+  charWeights[name] = isNaN(parsed) ? 0 : parsed;
+  render();
+}
+
+function onWeightKeydown(name, input, event) {
+  if (event.key !== 'Enter') return;
+  event.preventDefault();
+  setWeight(name, input.value);
+  const idx = STAT_NAMES.indexOf(name);
+  const nextIdx = idx + 1;
+  if (nextIdx < STAT_NAMES.length) {
+    const nextId = 'w-' + STAT_NAMES[nextIdx].replace(/\s+/g, '_');
+    requestAnimationFrame(() => {
+      const nextInput = document.getElementById(nextId);
+      if (nextInput) { nextInput.focus(); nextInput.select(); }
+    });
+  }
+}
+
+function setEchoName(echoId, el) {
+  const echo = echoState.find(e => e.id === echoId);
+  if (!echo) return;
+  const name = (el.textContent || '').trim();
+  echo.name = name || 'Echo ' + echo.id;
+  render();
+}
+
+function resetAll() {
+  initState();
+  render();
+}
+
+function resetEcho(echoId) {
+  const echo = echoState.find(e => e.id === echoId);
+  if (!echo) return;
+  for (const slot of echo.slots) {
+    slot.statName = null;
+    slot.valueIndex = -1;
+  }
+  render();
+}
+
+function render() {
+  const app = document.getElementById('app');
+  const bestId = findBestEcho();
+  let html = '';
+  if (echoState.length === 0) {
+    html = '<div class="empty-state"><div class="icon">&#x1F4A0;</div><div>Add echoes to begin comparing substats</div></div>';
+    app.innerHTML = html;
+    return;
+  }
+  html += '<div class="layout-wrap">';
+  html += `<div class="sidebar${weightsOpen ? ' open' : ''}">
+    <div class="sidebar-header">
+      <h3>Substat Value</h3>
+      <button class="sidebar-close" onclick="toggleWeights()" tabindex="-1">&times;</button>
+    </div>
+    <div class="sidebar-list">`;
+  for (const name of STAT_NAMES) {
+    const w = charWeights[name];
+    const suffix = isPercentStat(name) ? '%' : '';
+    html += `<div class="sidebar-row">
+      <label>${getDisplay(name)}</label>
+      <input class="weight-input" type="number" step="0.01" id="w-${name.replace(/\s+/g,'_')}" value="${w || ''}" onchange="setWeight('${name}',this.value)" onkeydown="onWeightKeydown('${name}',this,event)" />
+    </div>`;
+  }
+  html += `</div>`;
+  html += buildChartHTML();
+  html += `</div>`;
+  html += '<div class="echo-grid">';
+  for (const echo of echoState) {
+    const score = calcEchoScore(echo.id);
+    const isBest = bestId === echo.id && score > 0;
+    html += `<div class="echo-card${isBest ? ' best' : ''}" data-id="${echo.id}">`;
+    html += `<div class="echo-card-header">
+      <div class="echo-title">
+        <span class="crown-badge">&#x1F451;</span>
+        <span class="name" contenteditable="true" onblur="setEchoName(${echo.id},this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${echo.name}</span>
+        <span class="badge">${echo.slots.filter(s => s.statName).length}/${echo.slots.length}</span>
+      </div>
+      <button class="remove-btn" onclick="removeEcho(${echo.id})" title="Remove echo">&times;</button>
+    </div>`;
+    const used = getUsedStatNames(echo.id);
+    for (let i = 0; i < echo.slots.length; i++) {
+      const slot = echo.slots[i];
+      const hasValue = slot.statName && slot.valueIndex >= 0;
+      const quality = hasValue ? calcQuality(slot.statName, slot.valueIndex) : 0;
+      const tierLabel = hasValue ? getTierLabel(slot.statName, slot.valueIndex) : '';
+      const tierColor = getTierColor(tierLabel);
+      const qColor = getQualityColor(quality);
+      html += `<div class="substat-row${hasValue ? ' filled' : ''}">
+        <div class="substat-select-row">
+          <select class="substat-select" onchange="setSubstat(${echo.id},${i},this.value)">
+            <option value="">-- Select substat --</option>`;
+      const hasWeights = STAT_NAMES.some(n => charWeights[n] > 0);
+      for (const name of STAT_NAMES) {
+        if (name !== slot.statName) {
+          if (used.includes(name)) continue;
+          if (hasWeights && charWeights[name] <= 0) continue;
+        }
+        const selected = slot.statName === name ? ' selected' : '';
+        html += `<option value="${name}"${selected}>${getDisplay(name)}</option>`;
+      }
+      html += `</select>`;
+      if (slot.statName) {
+        html += `<button class="btn btn-sm btn-danger" onclick="setSubstat(${echo.id},${i},'')" title="Clear">&times;</button>`;
+      }
+      html += `</div>`;
+      if (slot.statName) {
+        const s = SUBSTATS[slot.statName];
+        const medianIdx = findClosestValueIndex(slot.statName, s.median);
+        html += `<div class="value-tiles">`;
+        for (let vi = 0; vi < s.values.length; vi++) {
+          const val = s.values[vi];
+          const formatted = s.format(val);
+          const isMedian = vi === medianIdx;
+          const isSelected = vi === slot.valueIndex;
+          const chanceVal = s.chance && s.chance[vi] ? s.chance[vi].toFixed(2) + '%' : '';
+          html += `<button class="value-tile${isMedian ? ' median' : ''}${isSelected ? ' selected' : ''}" onclick="setValue(${echo.id},${i},${vi})" title="Roll chance: ${chanceVal}">${formatted}</button>`;
+        }
+        html += `</div>`;
+        html += `<div class="substat-meta">
+          <span class="tier-label" style="color:${tierColor}">${tierLabel}</span>
+          <div class="substat-quality">
+            <div class="substat-quality-fill" style="width:${quality}%;background:${qColor}"></div>
+          </div>
+          <span class="substat-quality-text" style="color:${qColor}">${Math.round(quality)}%</span>
+        </div>`;
+      }
+      html += `</div>`;
+    }
+    if (score > 0) {
+      const contributions = [];
+      for (const slot of echo.slots) {
+        if (!slot.statName || slot.valueIndex < 0) continue;
+        const s = SUBSTATS[slot.statName];
+        if (!s || slot.valueIndex >= s.values.length) continue;
+        const weight = charWeights[slot.statName] || 1;
+        const contrib = weight * (s.values[slot.valueIndex] / s.median);
+        contributions.push({ name: slot.statName, value: Math.round(contrib * 100) / 100 });
+      }
+      if (contributions.length > 0) {
+        const maxC = Math.max(...contributions.map(c => c.value), 0.01);
+        html += `<div class="contrib-section">
+          <div class="contrib-header">Value Breakdown</div>`;
+        for (const c of contributions) {
+          const pct = (c.value / maxC) * 100;
+          html += `<div class="contrib-row">
+            <span class="contrib-label">${getDisplay(c.name)}</span>
+            <div class="contrib-bar-track"><div class="contrib-bar-fill" style="width:${pct}%"></div></div>
+            <span class="contrib-value">${c.value.toFixed(2)}%</span>
+          </div>`;
+        }
+        html += `</div>`;
+      }
+    }
+    html += `<div class="echo-footer">
+      <div class="echo-score">
+        <span class="echo-score-label">Echo Value</span>
+        <span class="echo-score-value" style="color:${score > 0 ? 'var(--gold)' : 'var(--text-dim)'}">${score.toFixed(2)}%</span>
+      </div>
+      <button class="btn btn-sm" onclick="resetEcho(${echo.id})" style="margin-left:8px">Reset</button>
+    </div>`;
+    html += `</div>`;
+  }
+  html += '</div></div>';
+
+  if (echoState.length > 1) {
+    const scoredEchoes = echoState.filter(e => calcEchoScore(e.id) > 0);
+    if (scoredEchoes.length > 0) {
+      const sorted = [...scoredEchoes].sort((a, b) => calcEchoScore(b.id) - calcEchoScore(a.id));
+      html += `<div class="summary-section">
+        <h3>Ranking</h3>
+        <table class="summary-table">
+          <thead><tr><th>#</th><th>Echo</th><th>Value</th><th>Substats</th><th>Best Roll</th><th>Worst Roll</th></tr></thead>
+          <tbody>`;
+      sorted.forEach((echo, rank) => {
+        const escore = calcEchoScore(echo.id);
+        const filledSlots = echo.slots.filter(s => s.statName && s.valueIndex >= 0);
+        let bestQ = -1, worstQ = Infinity;
+        let bestName = '', worstName = '';
+        for (const slot of filledSlots) {
+          const q = calcQuality(slot.statName, slot.valueIndex);
+          if (q > bestQ) { bestQ = q; bestName = slot.statName; }
+          if (q < worstQ) { worstQ = q; worstName = slot.statName; }
+        }
+        const isBest = rank === 0;
+        html += `<tr${isBest ? ' class="best-val"' : ''}>
+          <td>${rank + 1}</td>
+          <td>${echo.name}</td>
+          <td${isBest ? ' class="best-val"' : ''}>${escore.toFixed(2)}%</td>
+          <td>${filledSlots.length}/${echo.slots.length}</td>
+          <td>${bestQ >= 0 ? bestName + ' (' + Math.round(bestQ) + '%)' : '-'}</td>
+          <td>${worstQ < Infinity ? worstName + ' (' + Math.round(worstQ) + '%)' : '-'}</td>
+        </tr>`;
+      });
+      html += `</tbody></table></div>`;
+    }
+  }
+  const filledCount = echoState.reduce((sum, e) => sum + e.slots.filter(s => s.statName && s.valueIndex >= 0).length, 0);
+  const totalSlots = echoState.reduce((sum, e) => sum + e.slots.length, 0);
+  const statusEl = document.getElementById('statusBar');
+  if (statusEl) {
+    const bestEcho = bestId ? echoState.find(e => e.id === bestId) : null;
+    const bestScore = bestEcho ? calcEchoScore(bestEcho.id) : 0;
+    let statusText = `${echoState.length} echo${echoState.length > 1 ? 's' : ''} \u00b7 ${filledCount}/${totalSlots} substats filled`;
+    if (bestScore > 0) statusText += ` \u00b7 Best: ${bestEcho.name} (${bestScore.toFixed(2)}%)`;
+    statusEl.textContent = statusText;
+  }
+  app.innerHTML = html;
+}
+
+(function initPresets() {
+  const sel = document.getElementById('presetSelect');
+  if (sel) {
+    for (const [key, preset] of Object.entries(PRESETS)) {
+      if (!key) continue;
+      const opt = document.createElement('option');
+      opt.value = key; opt.textContent = preset.label;
+      sel.appendChild(opt);
+    }
+  }
+})();
+initState();
+render();
+</script>
+</body>
+</html>

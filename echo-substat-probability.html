@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WuWa Echo Substats Calculator</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0e1a; --bg2: #111827; --bg3: #1a2238; --bg4: #1f2a48;
+  --border: #2a3558; --text: #e8edf5; --text2: #8892b0;
+  --accent: #00d4ff; --accent2: #0088cc; --success: #00ff88;
+  --danger: #ff4757; --gold: #ffd700; --orange: #ff8a65;
+  --radius: 10px;
+}
+html { font-size: 14px; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh;
+}
+.container { max-width: 1060px; margin: 0 auto; padding: 16px; }
+
+header { text-align: center; padding: 20px 16px 14px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+header h1 { font-size: 1.5rem; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--success)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+.layout { display: grid; grid-template-columns: 1fr 300px; gap: 16px; align-items: start; }
+@media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+
+.substat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.substat {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+  position: relative;
+}
+.substat:hover { border-color: var(--accent2); background: var(--bg3); }
+.substat.selected {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(0,212,255,0.02));
+  box-shadow: 0 0 12px rgba(0,212,255,0.12);
+}
+.substat.maxed { opacity: 0.35; cursor: default; }
+.substat.maxed:hover { border-color: var(--border); background: var(--bg2); }
+
+.substat-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.substat-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.substat-name { font-size: 0.88rem; font-weight: 500; color: var(--text2); }
+.substat.selected .substat-name { color: var(--text); }
+
+.substat-gear {
+  position: absolute;
+  bottom: 3px; right: 3px;
+  width: 20px; height: 20px;
+  border: none; border-radius: 3px;
+  background: transparent;
+  color: var(--text2);
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0.4;
+  transition: all 0.15s;
+  padding: 0;
+  line-height: 1;
+}
+.substat:hover .substat-gear { opacity: 0.7; }
+.substat.selected .substat-gear { opacity: 1; color: var(--accent); }
+.substat-gear:hover { background: var(--bg4); opacity: 1 !important; }
+
+.vs-range-text {
+  font-size: 0.68rem;
+  color: var(--accent);
+  margin-bottom: 4px;
+  font-weight: 600;
+  text-align: center;
+}
+.vs-track-wrap { position: relative; height: 28px; }
+.vs-track {
+  position: absolute;
+  top: 50%; left: 4px; right: 4px;
+  height: 4px;
+  background: var(--bg);
+  border-radius: 2px;
+  transform: translateY(-50%);
+}
+.vs-fill {
+  position: absolute;
+  top: 0; height: 100%;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  border-radius: 2px;
+  pointer-events: none;
+}
+.vs-thumb {
+  position: absolute;
+  top: 50%;
+  width: 16px; height: 16px;
+  background: var(--accent);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  z-index: 2;
+  box-shadow: 0 0 6px rgba(0,212,255,0.4);
+  transition: box-shadow 0.15s;
+}
+.vs-thumb:hover { box-shadow: 0 0 10px rgba(0,212,255,0.6); }
+.vs-thumb:active { cursor: grabbing; box-shadow: 0 0 14px rgba(0,212,255,0.8); }
+
+.vs-labels {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 4px 0;
+  font-size: 0.62rem;
+  color: var(--text2);
+  pointer-events: none;
+}
+.vs-labels span { transition: color 0.15s; }
+.vs-labels span.active { color: var(--accent); font-weight: 600; }
+
+/* Results */
+.results {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  position: sticky;
+  top: 16px;
+}
+.results h2 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text2); margin-bottom: 12px; text-align: center; }
+.result-inner { text-align: center; }
+.result-none { text-align: center; padding: 30px 16px; color: var(--text2); font-size: 0.85rem; }
+.result-pct { font-size: 2.4rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.result-pct.high { color: var(--success); }
+.result-pct.mid { color: var(--accent); }
+.result-pct.low { color: var(--gold); }
+.result-pct.rare { color: var(--orange); }
+.result-pct.extreme { color: var(--danger); }
+.result-1inx { font-size: 0.88rem; color: var(--text2); margin-top: 2px; font-weight: 600; }
+
+.chart-wrap { width: 150px; height: 150px; margin: 10px auto; position: relative; }
+.chart-wrap canvas { width: 100%; height: 100%; }
+
+.result-summary { font-size: 0.72rem; color: var(--text2); margin-top: 2px; line-height: 1.5; }
+
+.breakdown { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 8px; }
+.breakdown h3 { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text2); margin-bottom: 4px; }
+.breakdown-table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
+.breakdown-table th { text-align: left; color: var(--text2); font-weight: 600; padding: 2px 4px; border-bottom: 1px solid var(--border); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.3px; }
+.breakdown-table td { padding: 3px 4px; border-bottom: 1px solid rgba(42,53,88,0.3); font-variant-numeric: tabular-nums; }
+.breakdown-table tr:last-child td { border-bottom: none; }
+.breakdown-table .combined-row td { font-weight: 700; color: var(--accent); border-top: 2px solid var(--border); padding-top: 6px; }
+
+.sub-color-crit { background: #ffd700; }
+.sub-color-critdmg { background: #ff6f00; }
+.sub-color-atk { background: #ff8a65; }
+.sub-color-basic { background: #f06292; }
+.sub-color-heavy { background: #ffb74d; }
+.sub-color-skill { background: #ce93d8; }
+.sub-color-liberation { background: #e57373; }
+.sub-color-regen { background: #81c784; }
+.sub-color-hp { background: #4fc3f7; }
+.sub-color-def { background: #a5d6a7; }
+.sub-color-fixed { background: #6b7280; }
+
+footer { text-align: center; padding: 16px; color: var(--text2); font-size: 0.7rem; border-top: 1px solid var(--border); margin-top: 28px; }
+
+/* Value popover */
+.value-popover {
+  position: fixed;
+  z-index: 100;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  width: 330px;
+  max-width: calc(100vw - 24px);
+}
+.value-popover-arrow {
+  position: absolute;
+  top: -7px;
+  width: 14px; height: 14px;
+  background: var(--bg2);
+  border-left: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  transform: rotate(45deg);
+  z-index: -1;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeIn 0.25s ease; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>Echo Substats Calculator</h1>
+</header>
+
+<div class="layout">
+  <div>
+    <div class="substat-grid" id="substatGrid"></div>
+  </div>
+  <div class="results" id="resultsPanel">
+    <h2>Results</h2>
+    <div id="resultsContent">
+      <div class="result-none">Click a substat to see probability</div>
+    </div>
+  </div>
+</div>
+
+<footer>Data from official Wuthering Waves product info.</footer>
+</div>
+
+<script>
+const SUBSTATS = [
+  { id: 'critRate', name: 'CRIT Rate', color: 'crit' },
+  { id: 'critDmg', name: 'CRIT DMG', color: 'critdmg' },
+  { id: 'atk', name: 'ATK%', color: 'atk' },
+  { id: 'basicAtkDmg', name: 'Basic', color: 'basic' },
+  { id: 'heavyAtkDmg', name: 'Heavy', color: 'heavy' },
+  { id: 'skillDmg', name: 'Skill', color: 'skill' },
+  { id: 'liberationDmg', name: 'Lib', color: 'liberation' },
+  { id: 'energyRegen', name: 'ER', color: 'regen' },
+  { id: 'hp', name: 'HP%', color: 'hp' },
+  { id: 'def', name: 'DEF%', color: 'def' },
+  { id: 'fixedAtk', name: 'Flat ATK', color: 'fixed' },
+  { id: 'fixedHp', name: 'Flat HP', color: 'fixed' },
+  { id: 'fixedDef', name: 'Flat DEF', color: 'fixed' },
+];
+
+const SV = [6.4,7.1,7.9,8.6,9.4,10.1,10.9,11.6];
+const SP = [6.7961,7.7670,20.3883,24.2718,17.4757,14.5631,5.8252,2.9126];
+
+SUBSTATS.forEach(s => {
+  if (s.id === 'fixedHp') { s.values = [320,360,390,430,470,510,540,580]; s.probs = [6.7961,7.7670,20.3883,24.2718,17.4757,14.5631,5.8252,2.9126]; }
+  else if (s.id === 'fixedAtk') { s.values = [30,40,50,60]; s.probs = [6.7961,52.4272,37.8641,2.9126]; }
+  else if (s.id === 'fixedDef') { s.values = [40,50,60,70]; s.probs = [14.5631,44.6602,32.0388,8.7379]; }
+  else if (s.id === 'critRate') { s.values = [6.3,6.9,7.5,8.1,8.7,9.3,9.9,10.5]; s.probs = [23.3333,23.3333,23.3333,8.0,8.0,8.0,3.0,3.0]; }
+  else if (s.id === 'critDmg') { s.values = [12.6,13.8,15.0,16.2,17.4,18.6,19.8,21.0]; s.probs = [23.3333,23.3333,23.3333,8.0,8.0,8.0,3.0,3.0]; }
+  else if (s.id === 'def') { s.values = [8.1,9.0,10.0,10.9,11.8,12.8,13.8,14.7]; s.probs = [6.7961,7.7670,20.3883,24.2718,17.4757,14.5631,5.8252,2.9126]; }
+  else if (s.id === 'energyRegen') { s.values = [6.8,7.6,8.4,9.2,10.0,10.8,11.6,12.4]; s.probs = [6.7961,7.7670,20.3883,24.2718,17.4757,14.5631,5.8252,2.9126]; }
+  else { s.values = SV; s.probs = SP; }
+});
+
+let state = {
+  selected: {},
+  valueRanges: {},
+};
+let currentPopover = null;
+let currentPopoverId = null;
+
+function nCr(n, r) {
+  if (r < 0 || r > n) return 0;
+  if (r === 0 || r === n) return 1;
+  r = Math.min(r, n - r);
+  let res = 1;
+  for (let i = 1; i <= r; i++) res = res * (n - r + i) / i;
+  return res;
+}
+
+function calc() {
+  const wantIds = Object.keys(state.selected).filter(k => state.selected[k]);
+  const k = wantIds.length;
+  if (k === 0) return null;
+  const pool = 13, slots = 5;
+  if (k > slots) return { prob: 0, basicProb: 0, valueFactor: 0, wantIds, pool, slots, indiv: {}, impossible: true };
+  const basicProb = nCr(pool - k, slots - k) / nCr(pool, slots);
+  let valueFactor = 1;
+  const indiv = {};
+  wantIds.forEach(id => {
+    const s = SUBSTATS.find(x => x.id === id);
+    if (!s || !s.values) { indiv[id] = { indivProb: 1 / pool, valueProb: 1 }; return; }
+    const r = state.valueRanges[id] || { min: 0, max: s.values.length - 1 };
+    let sum = 0;
+    for (let i = r.min; i <= r.max; i++) sum += s.probs[i];
+    const vp = sum / 100;
+    indiv[id] = { indivProb: 1 / pool, valueProb: vp, range: r };
+    valueFactor *= vp;
+  });
+  return { prob: basicProb * valueFactor, basicProb, valueFactor, wantIds, pool, slots, indiv };
+}
+
+function formatPct(v) {
+  if (v === 0) return '0%';
+  if (v < 0.0001) return '<0.0001%';
+  if (v < 0.001) return (v * 100).toFixed(4) + '%';
+  if (v < 0.01) return (v * 100).toFixed(3) + '%';
+  if (v < 0.1) return (v * 100).toFixed(3) + '%';
+  if (v < 1) return (v * 100).toFixed(2) + '%';
+  return (v * 100).toFixed(2) + '%';
+}
+
+function format1inX(v) {
+  if (v === 0) return '\u221e';
+  const x = 1 / v;
+  if (x >= 1000000) return '1 in ' + (x / 1000000).toFixed(1) + 'M';
+  if (x >= 1000) return '1 in ' + Math.round(x).toLocaleString();
+  if (x >= 100) return '1 in ' + x.toFixed(1);
+  if (x >= 10) return '1 in ' + x.toFixed(1);
+  return '1 in ' + x.toFixed(2);
+}
+
+function pctClass(v) {
+  if (v === 0) return 'extreme';
+  if (v >= 0.5) return 'high';
+  if (v >= 0.2) return 'mid';
+  if (v >= 0.05) return 'low';
+  if (v >= 0.01) return 'rare';
+  return 'extreme';
+}
+
+let chartAnimId = null;
+let chartCurrent = 0;
+let chartTarget = 0;
+
+function drawChart(pct) {
+  const canvas = document.getElementById('chartCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const size = rect.width || 150;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = size * dpr;
+  canvas.height = size * dpr;
+  canvas.style.width = size + 'px';
+  canvas.style.height = size + 'px';
+  ctx.scale(dpr, dpr);
+  const cx = size / 2, cy = size / 2;
+  const outer = size * 0.42, inner = size * 0.26;
+  ctx.clearRect(0, 0, size, size);
+  const fraction = Math.min(1, Math.max(0, pct));
+  const angle = fraction * Math.PI * 2;
+  const start = -Math.PI / 2;
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, outer, 0, Math.PI * 2);
+  ctx.arc(cx, cy, inner, Math.PI * 2, 0, true);
+  ctx.closePath();
+  ctx.fillStyle = '#1a2238';
+  ctx.fill();
+
+  if (fraction > 0.001) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, outer, start, start + angle);
+    ctx.arc(cx, cy, inner, start + angle, start, true);
+    ctx.closePath();
+    const grad = ctx.createLinearGradient(0, 0, size, size);
+    grad.addColorStop(0, '#00d4ff');
+    grad.addColorStop(0.5, '#00b8e8');
+    grad.addColorStop(1, '#00ff88');
+    ctx.fillStyle = grad;
+    ctx.fill();
+  }
+
+  ctx.fillStyle = '#e8edf5';
+  ctx.font = 'bold ' + (size * 0.14) + 'px -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(formatPct(fraction), cx, cy - size * 0.035);
+  ctx.fillStyle = '#8892b0';
+  ctx.font = (size * 0.07) + 'px -apple-system, sans-serif';
+  ctx.fillText(format1inX(fraction), cx, cy + size * 0.1);
+}
+
+function animateChart() {
+  const diff = chartTarget - chartCurrent;
+  if (Math.abs(diff) < 0.0005) {
+    chartCurrent = chartTarget;
+    drawChart(chartCurrent);
+    chartAnimId = null;
+    return;
+  }
+  chartCurrent += diff * 0.15;
+  drawChart(chartCurrent);
+  chartAnimId = requestAnimationFrame(animateChart);
+}
+
+function toggleSelect(id) {
+  if (state.selected[id]) {
+    delete state.selected[id];
+  } else {
+    const count = Object.keys(state.selected).length;
+    if (count >= 5) return;
+    state.selected[id] = true;
+    const s = SUBSTATS.find(x => x.id === id);
+    if (s && s.values && !state.valueRanges[id]) {
+      state.valueRanges[id] = { min: 0, max: s.values.length - 1 };
+    }
+  }
+  renderAll();
+}
+
+function openSlider(id, rect) {
+  if (currentPopover && currentPopoverId === id) {
+    if (document.body.contains(currentPopover)) document.body.removeChild(currentPopover);
+    currentPopover = null;
+    currentPopoverId = null;
+    return;
+  }
+  if (currentPopover) {
+    if (document.body.contains(currentPopover)) document.body.removeChild(currentPopover);
+    currentPopover = null;
+    currentPopoverId = null;
+  }
+  if (!state.selected[id]) return;
+  const s = SUBSTATS.find(x => x.id === id);
+  if (!s || !s.values) return;
+  const r = state.valueRanges[id] || { min: 0, max: s.values.length - 1 };
+
+  const popover = document.createElement('div');
+  popover.className = 'value-popover';
+
+  const arrow = document.createElement('div');
+  arrow.className = 'value-popover-arrow';
+  popover.appendChild(arrow);
+
+  const body = document.createElement('div');
+  buildSlider(body, s.id, s.values, s.probs, r.min, r.max);
+  popover.appendChild(body);
+  document.body.appendChild(popover);
+  currentPopover = popover;
+  const popW = popover.offsetWidth;
+  const popH = popover.offsetHeight;
+
+  let top = rect.bottom + 8;
+  let left = rect.left + rect.width / 2 - popW / 2;
+  if (left < 8) left = 8;
+  if (left + popW > window.innerWidth - 8) left = window.innerWidth - popW - 8;
+  let arrowLeft = rect.left + rect.width / 2 - left;
+  arrowLeft = Math.max(10, Math.min(popW - 10, arrowLeft));
+
+  if (top + popH > window.innerHeight - 8) {
+    top = rect.top - popH - 8;
+    arrow.style.top = 'auto';
+    arrow.style.bottom = '-7px';
+    arrow.style.transform = 'rotate(225deg)';
+  }
+  popover.style.top = top + 'px';
+  popover.style.left = left + 'px';
+  arrow.style.left = arrowLeft + 'px';
+
+  function closePopover() {
+    if (document.body.contains(popover)) document.body.removeChild(popover);
+    if (currentPopover === popover) currentPopover = null;
+  }
+
+  document.body.appendChild(popover);
+  currentPopover = popover;
+  currentPopoverId = id;
+}
+
+function renderGrid() {
+  const grid = document.getElementById('substatGrid');
+  grid.innerHTML = '';
+  const selectedCount = Object.keys(state.selected).length;
+  const isMaxed = selectedCount >= 5;
+  SUBSTATS.forEach(s => {
+    const isSel = !!state.selected[s.id];
+    const card = document.createElement('div');
+    card.className = 'substat' + (isSel ? ' selected' : '') + (!isSel && isMaxed ? ' maxed' : '');
+    card.dataset.id = s.id;
+
+    const row = document.createElement('div');
+    row.className = 'substat-row';
+
+    const dot = document.createElement('div');
+    dot.className = 'substat-dot sub-color-' + s.color;
+
+    const name = document.createElement('div');
+    name.className = 'substat-name';
+    name.textContent = s.name;
+
+    row.appendChild(dot);
+    row.appendChild(name);
+    card.appendChild(row);
+
+    const gear = document.createElement('button');
+    gear.className = 'substat-gear';
+    gear.textContent = '\u2699';
+    gear.title = 'Select which roll values to accept';
+    gear.onclick = function(e) {
+      e.stopPropagation();
+      const rect = this.getBoundingClientRect();
+      if (!state.selected[s.id]) {
+        const count = Object.keys(state.selected).length;
+        if (count >= 5) return;
+        state.selected[s.id] = true;
+        if (s.values && !state.valueRanges[s.id]) {
+          state.valueRanges[s.id] = { min: 0, max: s.values.length - 1 };
+        }
+        renderGrid();
+      }
+      openSlider(s.id, rect);
+    };
+    card.appendChild(gear);
+
+    card.onclick = function(e) {
+      if (e.target.closest('.substat-gear')) return;
+      toggleSelect(s.id);
+    };
+
+    grid.appendChild(card);
+  });
+}
+
+function buildSlider(container, id, values, probs, curMin, curMax) {
+  const N = values.length;
+
+  const rangeText = document.createElement('div');
+  rangeText.className = 'vs-range-text';
+  container.appendChild(rangeText);
+
+  const trackWrap = document.createElement('div');
+  trackWrap.className = 'vs-track-wrap';
+
+  const track = document.createElement('div');
+  track.className = 'vs-track';
+
+  const fill = document.createElement('div');
+  fill.className = 'vs-fill';
+
+  const leftThumb = document.createElement('div');
+  leftThumb.className = 'vs-thumb';
+  const rightThumb = document.createElement('div');
+  rightThumb.className = 'vs-thumb';
+
+  track.appendChild(fill);
+  track.appendChild(leftThumb);
+  track.appendChild(rightThumb);
+  trackWrap.appendChild(track);
+  container.appendChild(trackWrap);
+
+  const labels = document.createElement('div');
+  labels.className = 'vs-labels';
+  for (let i = 0; i < N; i++) {
+    const span = document.createElement('span');
+    const v = values[i];
+    span.textContent = (v % 1 === 0 ? v.toString() : v.toFixed(1)) + (id.includes('fixed') ? '' : '%');
+    labels.appendChild(span);
+  }
+  container.appendChild(labels);
+
+  let minIdx = curMin;
+  let maxIdx = curMax;
+
+  function updateSlider() {
+    const pct = (i) => i / (N - 1) * 100;
+    leftThumb.style.left = pct(minIdx) + '%';
+    rightThumb.style.left = pct(maxIdx) + '%';
+    fill.style.left = pct(minIdx) + '%';
+    fill.style.width = (pct(maxIdx) - pct(minIdx)) + '%';
+
+    const spans = labels.querySelectorAll('span');
+    spans.forEach((el, i) => el.classList.toggle('active', i >= minIdx && i <= maxIdx));
+
+    const lo = values[minIdx];
+    const hi = values[maxIdx];
+    const loStr = (lo % 1 === 0 ? lo.toString() : lo.toFixed(1)) + (id.includes('fixed') ? '' : '%');
+    const hiStr = (hi % 1 === 0 ? hi.toString() : hi.toFixed(1)) + (id.includes('fixed') ? '' : '%');
+    rangeText.textContent = loStr + ' \u2013 ' + hiStr;
+
+    state.valueRanges[id] = { min: minIdx, max: maxIdx };
+    renderResults();
+  }
+
+  function dragStart(thumb, isLeft) {
+    return function(e) {
+      e.preventDefault();
+      const onMove = function(ev) {
+        ev.preventDefault();
+        const rect = track.getBoundingClientRect();
+        const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+        let pct = (clientX - rect.left) / rect.width;
+        pct = Math.max(0, Math.min(1, pct));
+        let idx = Math.round(pct * (N - 1));
+        if (isLeft) {
+          idx = Math.max(0, Math.min(maxIdx - 1, idx));
+          minIdx = idx;
+        } else {
+          idx = Math.min(N - 1, Math.max(minIdx + 1, idx));
+          maxIdx = idx;
+        }
+        updateSlider();
+      };
+      const onUp = function() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend', onUp);
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('touchend', onUp);
+    };
+  }
+
+  leftThumb.addEventListener('mousedown', dragStart(leftThumb, true));
+  leftThumb.addEventListener('touchstart', dragStart(leftThumb, true), { passive: false });
+  rightThumb.addEventListener('mousedown', dragStart(rightThumb, false));
+  rightThumb.addEventListener('touchstart', dragStart(rightThumb, false), { passive: false });
+
+  updateSlider();
+}
+
+function renderResults() {
+  const r = calc();
+  const el = document.getElementById('resultsContent');
+  if (!r) {
+    el.innerHTML = '<div class="result-none">Click a substat to see probability</div>';
+    chartTarget = 0;
+    if (chartAnimId) { cancelAnimationFrame(chartAnimId); chartAnimId = null; }
+    chartCurrent = 0;
+    drawChart(0);
+    return;
+  }
+  const p = Math.max(0, r.prob);
+  const pct = formatPct(p);
+  const oneIn = format1inX(p);
+  const cls = pctClass(p);
+
+  const wantNames = r.wantIds.map(id => {
+    const s = SUBSTATS.find(x => x.id === id);
+    return s ? s.name : id;
+  });
+
+  let bd = '<table class="breakdown-table"><thead><tr><th>Substat</th><th>Roll</th><th>Value</th><th>Total</th></tr></thead><tbody>';
+  r.wantIds.forEach(id => {
+    const d = r.indiv[id];
+    const name = SUBSTATS.find(x => x.id === id).name;
+    bd += '<tr><td class="sub-name">' + name + '</td><td>' + formatPct(d.indivProb) + '</td><td>' + formatPct(d.valueProb) + '</td><td>' + formatPct(d.indivProb * d.valueProb) + '</td></tr>';
+  });
+  bd += '<tr class="combined-row"><td>Combined</td><td>' + formatPct(r.basicProb) + '</td><td>' + formatPct(r.valueFactor) + '</td><td>' + pct + '</td></tr>';
+  bd += '</tbody></table>';
+
+  let extra = '';
+  if (r.impossible) {
+    extra = '<div style="margin-top:6px;font-size:0.74rem;color:var(--danger);font-weight:600;">Too many substats selected for 5 slots</div>';
+  }
+
+  el.innerHTML = '<div class="result-inner fade-in"><div class="result-pct ' + cls + '">' + pct + '</div><div class="result-1inx">' + oneIn + '</div><div class="chart-wrap"><canvas id="chartCanvas"></canvas></div><div class="result-summary">' + wantNames.join(' + ') + '</div>' + extra + '<div class="breakdown">' + bd + '</div></div>';
+
+  chartTarget = p;
+  if (chartAnimId) { cancelAnimationFrame(chartAnimId); chartAnimId = null; }
+  chartCurrent = p > 0 ? Math.max(0.001, chartCurrent) : 0;
+  animateChart();
+}
+
+function renderAll() {
+  renderGrid();
+  renderResults();
+}
+
+document.addEventListener('click', function(e) {
+  if (!currentPopover) return;
+  if (e.target.closest('.substat-gear')) return;
+  if (!currentPopover.contains(e.target)) {
+    if (document.body.contains(currentPopover)) document.body.removeChild(currentPopover);
+    currentPopover = null;
+    currentPopoverId = null;
+  }
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && currentPopover) {
+    if (document.body.contains(currentPopover)) document.body.removeChild(currentPopover);
+    currentPopover = null;
+    currentPopoverId = null;
+  }
+});
+
+renderAll();
+</script>
+</body>
+</html>
