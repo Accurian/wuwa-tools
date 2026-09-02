@@ -360,7 +360,7 @@ function DonutChart({ fraction }: { fraction: number }) {
       ctx.arc(cx, cy, outer, 0, Math.PI * 2)
       ctx.arc(cx, cy, inner, Math.PI * 2, 0, true)
       ctx.closePath()
-      ctx.fillStyle = '#1a2238'
+      ctx.fillStyle = '#2c2c2e'
       ctx.fill()
 
       if (f > 0.001) {
@@ -376,12 +376,12 @@ function DonutChart({ fraction }: { fraction: number }) {
         ctx.fill()
       }
 
-      ctx.fillStyle = '#e7edf5'
+      ctx.fillStyle = '#f1f2f4'
       ctx.font = `bold ${size * 0.14}px -apple-system, sans-serif`
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       ctx.fillText(formatPct(f), cx, cy - size * 0.035)
-      ctx.fillStyle = '#8892b0'
+      ctx.fillStyle = '#c6c9cf'
       ctx.font = `${size * 0.07}px -apple-system, sans-serif`
       ctx.fillText(format1inX(f), cx, cy + size * 0.1)
     }

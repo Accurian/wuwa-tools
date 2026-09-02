@@ -20,7 +20,7 @@ export const NAV_ITEMS: NavItem[] = [
 
 /** Canonical page title shown in the top bar for the current route. */
 export const PAGE_TITLES: Record<string, string> = {
-  home: 'Echo Tools',
+  home: 'Home',
   comparison: 'Echo Substat Comparison',
   probability: 'Echo Substat Calculator',
   'xp-tuners': 'Echo Resources',

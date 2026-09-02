@@ -47,11 +47,9 @@ export function Landing() {
   return (
     <div className="page-wrap pt-14 sm:pt-20">
       <section className="mx-auto max-w-3xl text-center">
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-          Echo{' '}
-          <span className="bg-gradient-to-r from-gold via-gold-bright to-gold bg-clip-text text-transparent">
-            Tools
-          </span>
+        <h1 className="text-2xl font-semibold leading-snug tracking-tight sm:text-3xl">
+          A collection of tools that I have created for{' '}
+          <span className="font-bold text-gold">Wuthering Waves</span>.
         </h1>
       </section>
 

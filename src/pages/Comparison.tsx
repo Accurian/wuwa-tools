@@ -224,7 +224,7 @@ export function Comparison() {
         </select>
         <button
           className={`btn ${weightsOpen ? 'active' : ''}`}
-          style={weightsOpen ? { background: 'var(--color-gold)', color: '#0b0f17', borderColor: 'var(--color-gold)', fontWeight: 600 } : undefined}
+          style={weightsOpen ? { background: 'var(--color-gold)', color: '#1a1a1c', borderColor: 'var(--color-gold)', fontWeight: 600 } : undefined}
           onClick={() => setWeightsOpen((v) => !v)}
         >
           Substat Value
@@ -505,7 +505,7 @@ function EchoCard({
                               ? 'border-gold/30 text-gold-dim hover:border-white/30 hover:bg-white/5'
                               : 'border-white/10 bg-black/30 text-muted hover:border-white/30 hover:text-text'
                         }`}
-                        style={isSelected && isMedian ? { background: 'var(--color-gold)', color: '#0b0f17' } : undefined}
+                        style={isSelected && isMedian ? { background: 'var(--color-gold)', color: '#1a1a1c' } : undefined}
                         onClick={() => onSetValue(i, vi)}
                         title={`Roll chance: ${chance}`}
                       >
