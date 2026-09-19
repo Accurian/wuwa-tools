@@ -170,63 +170,71 @@ function RangeSlider({
 
   const pct = (i: number) => `${(i / (N - 1)) * 100}%`
 
-  const thumbHandlers = (isLeft: boolean) => ({
-    onPointerDown: (e: React.PointerEvent) => {
-      if (disabled) return
-      e.preventDefault()
-      const move = (ev: PointerEvent) => {
-        const track = trackRef.current
-        if (!track) return
-        const rect = track.getBoundingClientRect()
-        let p = (ev.clientX - rect.left) / rect.width
-        p = Math.max(0, Math.min(1, p))
-        let idx = Math.round(p * (N - 1))
-        let mn = minRef.current
-        let mx = maxRef.current
-        if (isLeft) {
-          idx = Math.max(0, Math.min(mx - 1, idx))
-          mn = idx
-        } else {
-          idx = Math.min(N - 1, Math.max(mn + 1, idx))
-          mx = idx
-        }
-        apply(mn, mx)
+  function indexFromClient(clientX: number): number {
+    const track = trackRef.current
+    if (!track) return 0
+    const rect = track.getBoundingClientRect()
+    const p = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
+    return Math.round(p * (N - 1))
+  }
+
+  function onPointerDown(e: React.PointerEvent) {
+    if (disabled) return
+    e.preventDefault()
+    const startX = e.clientX
+    const startIdx = indexFromClient(startX)
+    const dMin = Math.abs(startIdx - minRef.current)
+    const dMax = Math.abs(startIdx - maxRef.current)
+    // Grab the nearer thumb; when the thumbs overlap, pick by drag direction.
+    let target: 'min' | 'max' | null = dMin < dMax ? 'min' : dMax < dMin ? 'max' : null
+
+    const move = (ev: PointerEvent) => {
+      if (target === null) {
+        if (ev.clientX < startX) target = 'min'
+        else if (ev.clientX > startX) target = 'max'
+        else return
       }
-      const up = () => {
-        document.removeEventListener('pointermove', move)
-        document.removeEventListener('pointerup', up)
+      const idx = indexFromClient(ev.clientX)
+      let mn = minRef.current
+      let mx = maxRef.current
+      if (target === 'min') {
+        // May meet the right thumb, so a single value can be selected.
+        mn = Math.max(0, Math.min(mx, idx))
+      } else {
+        mx = Math.min(N - 1, Math.max(mn, idx))
       }
-      document.addEventListener('pointermove', move)
-      document.addEventListener('pointerup', up)
-    },
-  })
+      apply(mn, mx)
+    }
+    const up = () => {
+      document.removeEventListener('pointermove', move)
+      document.removeEventListener('pointerup', up)
+    }
+    document.addEventListener('pointermove', move)
+    document.addEventListener('pointerup', up)
+  }
 
   return (
     <div
       onClick={(e) => e.stopPropagation()}
       className={disabled ? 'pointer-events-none opacity-50' : ''}
     >
-      <div className="relative h-4 select-none">
-        <div
-          ref={trackRef}
-          className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-bg"
-        />
+      <div
+        ref={trackRef}
+        onPointerDown={onPointerDown}
+        className="relative h-4 cursor-grab touch-none select-none"
+      >
+        <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-bg" />
         <div
           className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-info"
-          style={{
-            left: pct(minIdx),
-            width: `calc(${pct(maxIdx)} - ${pct(minIdx)})`,
-          }}
+          style={{ left: pct(minIdx), width: `calc(${pct(maxIdx)} - ${pct(minIdx)})` }}
         />
         <div
-          className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full border-2 border-white bg-info shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-transform active:scale-110"
+          className="pointer-events-none absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-info shadow-[0_0_8px_rgba(59,130,246,0.5)]"
           style={{ left: pct(minIdx) }}
-          {...thumbHandlers(true)}
         />
         <div
-          className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full border-2 border-white bg-info shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-transform active:scale-110"
+          className="pointer-events-none absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-info shadow-[0_0_8px_rgba(59,130,246,0.5)]"
           style={{ left: pct(maxIdx) }}
-          {...thumbHandlers(false)}
         />
       </div>
 
