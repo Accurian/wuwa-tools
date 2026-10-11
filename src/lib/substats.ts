@@ -249,6 +249,14 @@ export const PRESETS: Record<string, Preset> = {
     label: 'Hiyuki',
     weights: { 'Crit. DMG': 4.79, 'Crit. Rate': 4.42, 'ATK%': 2.38, ATK: 1.11, 'Basic ATK DMG Bonus': 0.03, 'Res. Skill DMG Bonus': 0.11, 'Res. Liberation DMG Bonus': 2.08 },
   },
+  'hsin-unison': {
+    label: 'Hsin (Unison)',
+    weights: { 'Crit. DMG': 6.2, 'Crit. Rate': 5.06, 'ATK%': 2.51, ATK: 1.16, 'Res. Skill DMG Bonus': 2.26, 'Res. Liberation DMG Bonus': 0.04, 'Basic ATK DMG Bonus': 0.16 },
+  },
+  'hsin-flare': {
+    label: 'Hsin (Flare)',
+    weights: { 'Crit. DMG': 5.91, 'Crit. Rate': 5.05, 'ATK%': 2.3, ATK: 1.07, 'Res. Skill DMG Bonus': 1.67, 'Res. Liberation DMG Bonus': 0.03, 'Basic ATK DMG Bonus': 0.22 },
+  },
   buling: {
     label: 'Buling',
     weights: { 'Crit. DMG': 2.27, 'Crit. Rate': 1.77, 'ATK%': 1.28, ATK: 0.9, 'Basic ATK DMG Bonus': 0.46, 'Res. Skill DMG Bonus': 0.16, 'Res. Liberation DMG Bonus': 1.17, 'Heavy ATK DMG Bonus': 0.12 },
