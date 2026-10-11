@@ -71,6 +71,13 @@ export function Comparison() {
     for (const n of STAT_NAMES) w[n] = 0
     return w
   })
+  // Raw text for the weight inputs so partial decimals (e.g. "0.0") aren't lost.
+  const [weightText, setWeightText] = useState<Record<string, string>>(() => {
+    const t: Record<string, string> = {}
+    for (const n of STAT_NAMES) t[n] = ''
+    return t
+  })
+  const [presetKey, setPresetKey] = useState('')
   const [weightsOpen, setWeightsOpen] = useState(false)
   const nextIdRef = useRef(3)
 
@@ -122,6 +129,16 @@ export function Comparison() {
     // ids 1,2 regenerated; keep counter aligned after init
     nextIdRef.current = fresh[fresh.length - 1].id + 1
     setEchoes(fresh)
+    // Also clear the "Substat Value" weights.
+    const w: Record<string, number> = {}
+    const t: Record<string, string> = {}
+    for (const n of STAT_NAMES) {
+      w[n] = 0
+      t[n] = ''
+    }
+    setCharWeights(w)
+    setWeightText(t)
+    setPresetKey('')
   }
 
   function setSubstat(echoId: number, slotIdx: number, statName: string) {
@@ -171,18 +188,26 @@ export function Comparison() {
   }
 
   function setWeight(name: string, val: string) {
+    // Allow only a partial/complete non-negative decimal while typing.
+    if (!/^\d*\.?\d*$/.test(val)) return
+    setWeightText((prev) => ({ ...prev, [name]: val }))
     const parsed = parseFloat(val)
     setCharWeights((prev) => ({ ...prev, [name]: isNaN(parsed) ? 0 : parsed }))
   }
 
   function loadPreset(key: string) {
+    setPresetKey(key)
     if (!key || !PRESETS[key]) return
     const preset = PRESETS[key]
-    setCharWeights(() => {
-      const w: Record<string, number> = {}
-      for (const n of STAT_NAMES) w[n] = preset.weights[n] || 0
-      return w
-    })
+    const w: Record<string, number> = {}
+    const t: Record<string, string> = {}
+    for (const n of STAT_NAMES) {
+      const v = preset.weights[n] || 0
+      w[n] = v
+      t[n] = v ? String(v) : ''
+    }
+    setCharWeights(w)
+    setWeightText(t)
   }
 
   const chartEntries = useMemo(() => {
@@ -210,7 +235,7 @@ export function Comparison() {
         </button>
         <select
           className="select w-auto text-sm"
-          defaultValue=""
+          value={presetKey}
           onChange={(e) => loadPreset(e.target.value)}
         >
           <option value="">Presets</option>
@@ -254,16 +279,15 @@ export function Comparison() {
                 <div key={name} className="flex items-center gap-1">
                   <label className="min-w-[55px] shrink-0 text-xs text-muted">{getDisplay(name)}</label>
                   <input
-                    type="number"
-                    step="0.01"
+                    type="text"
+                    inputMode="decimal"
                     id={`w-${name.replace(/\s+/g, '_')}`}
                     className="input ml-auto w-16 px-1 py-0.5 text-center text-xs"
-                    value={charWeights[name] || ''}
+                    value={weightText[name] ?? ''}
                     onChange={(e) => setWeight(name, e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key !== 'Enter') return
                       e.preventDefault()
-                      setWeight(name, (e.target as HTMLInputElement).value)
                       const idx = STAT_NAMES.indexOf(name)
                       const next = STAT_NAMES[idx + 1]
                       if (next) {
