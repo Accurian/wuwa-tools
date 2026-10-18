@@ -91,8 +91,8 @@ export function XpTuners() {
       <section className="card mt-4">
         <h2 className="card-title">Checkpoint Level</h2>
         <p className="text-sm text-muted">
-          Choose how far you go before checking substats. Higher levels use more Tuners per XP —
-          find where <em>your</em> stash is balanced.
+          Choose how far to level before checking substats. Higher levels use more Tuners, so find
+          where your stash is balanced.
         </p>
         <div className="mt-4">
           <CheckpointSlider value={cpIdx} onChange={setCpIdx} />

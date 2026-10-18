@@ -67,7 +67,7 @@ export function Landing() {
           Welcome!
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-muted sm:text-base">
-          A collection of tools to compare your echoes, calculating your odds, and managing your
+          A collection of tools to compare your echoes, calculate your odds, and manage your
           resources.
         </p>
       </section>

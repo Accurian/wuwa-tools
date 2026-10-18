@@ -124,8 +124,7 @@ export function Probability() {
         </div>
         <p className="mt-4 text-sm text-muted">
           Pick up to <span className="font-semibold text-text">{rolls}</span> substats to see the
-          odds they all appear within {rolls} roll{rolls > 1 ? 's' : ''}. Drag a bar to accept a
-          specific roll range.
+          odds they appear within a set amount of rolls.
         </p>
       </section>
 
