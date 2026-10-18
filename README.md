@@ -6,33 +6,33 @@ Tools for **Wuthering Waves**, deployed on [Vercel](https://vercel.com/). Everyt
 
 ## Tools
 
-| Tool | Page |
+| Tool | Route |
 | --- | --- |
-| Echo Substat Comparison | [comparison.html](comparison.html) |
-| Echo Substat Calculator | [probability.html](probability.html) |
-| Echo Resources | [xp-tuners.html](xp-tuners.html) |
+| Echo Substat Comparison | `/comparison` |
+| Echo Substat Probability | `/probability` |
+| Echo Resources | `/xp-tuners` |
 
 The [landing page](index.html) links all three tools and shares a unified design system and site chrome.
 
 ## Architecture
 
-The site is a **Vite multi-page app** built with **React 19 + TypeScript** and styled with **Tailwind CSS v4**. Instead of self-contained HTML files, each tool is a real HTML entry that mounts a React page, sharing:
+The site is a **single-page Vite app** built with **React 19 + TypeScript** and styled with **Tailwind CSS v4**. A tiny client-side router ([`src/lib/router.tsx`](src/lib/router.tsx)) handles navigation instantly — no full page reloads or flash between pages. Legacy `.html` URLs still resolve via the rewrite in `vercel.json`.
 
-- A unified dark theme via Tailwind design tokens ([`src/index.css`](src/index.css))
-- Shared site chrome — sidebar, header, and footer ([`src/components/`](src/components))
+Everything shares:
+
+- A themeable design system (light + dark) via Tailwind design tokens ([`src/index.css`](src/index.css))
+- Shared site chrome — sidebar, header (with the light/dark toggle), and footer ([`src/components/`](src/components))
 - Reusable data + math modules ([`src/lib/`](src/lib))
-
-Because it's served at the root (no sub-path), links resolve cleanly as `/comparison.html`, `/probability.html`, and `/xp-tuners.html`.
 
 ### Source layout
 
 ```
-index.html, comparison.html, probability.html, xp-tuners.html   ← Vite entries
+index.html                    ← single Vite entry
 src/
-  components/   Layout, SiteHeader, SiteSidebar
-  entries/      per-page React mount points
-  lib/          substats, probability, balance (data + math)
-  pages/        Landing, Comparison, Probability, XpTuners
+  main.tsx                    ← router + app mount
+  components/                 Layout, SiteHeader, Sidebar, ThemeToggle, icons
+  lib/                        router, theme, substats, probability, balance (data + math)
+  pages/                      Landing, Comparison, Probability, XpTuners
 ```
 
 ## Local development

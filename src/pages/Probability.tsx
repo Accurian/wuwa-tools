@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
+import type { CSSProperties } from 'react'
 import {
   PROB_SUBSTATS,
   calcProbability,
@@ -11,6 +12,7 @@ import {
   type ProbSubstat,
   type ValueRange,
 } from '../lib/probability'
+import { IconCheck } from '../components/icons'
 
 const COLOR_MAP: Record<string, string> = {
   crit: '#ffd700',
@@ -34,13 +36,37 @@ const RESULT_COLORS: Record<string, string> = {
   extreme: 'var(--color-danger)',
 }
 
+const ROLL_OPTIONS = Array.from({ length: SLOTS }, (_, i) => i + 1)
+
+type AccentVars = CSSProperties & { '--accent'?: string }
+
+function accentStyle(color: string): AccentVars {
+  return { '--accent': color }
+}
+
 export function Probability() {
+  const [rolls, setRolls] = useState(SLOTS)
   const [selected, setSelected] = useState<Record<string, boolean>>({})
   const [valueRanges, setValueRanges] = useState<Record<string, ValueRange>>({})
 
   const selectedCount = Object.keys(selected).length
-  const isMaxed = selectedCount >= SLOTS
-  const result = useMemo(() => calcProbability(selected, valueRanges), [selected, valueRanges])
+  const isMaxed = selectedCount >= rolls
+  const result = useMemo(
+    () => calcProbability(selected, valueRanges, rolls),
+    [selected, valueRanges, rolls],
+  )
+
+  function changeRolls(next: number) {
+    setRolls(next)
+    setSelected((prev) => {
+      const ids = Object.keys(prev)
+      if (ids.length <= next) return prev
+      // Keep the substats chosen first when trimming to the new roll count.
+      const trimmed: Record<string, boolean> = {}
+      for (const id of ids.slice(0, next)) trimmed[id] = true
+      return trimmed
+    })
+  }
 
   function toggleSelect(id: string) {
     if (selected[id]) {
@@ -51,7 +77,7 @@ export function Probability() {
       })
       return
     }
-    if (selectedCount >= SLOTS) return
+    if (selectedCount >= rolls) return
     const s = substatById(id)
     setValueRanges((r) => {
       if (s && s.values && !r[id]) return { ...r, [id]: { min: 0, max: s.values.length - 1 } }
@@ -66,20 +92,49 @@ export function Probability() {
 
   return (
     <div className="page-wrap pt-8">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm text-muted">
-          Pick up to {SLOTS} substats, then drag the bar to set the roll range you&rsquo;ll accept.
-        </p>
-        <span className="chip bg-surface-3 text-text">
-          {selectedCount}/{SLOTS}
-        </span>
-      </div>
+      <section className="card mb-4">
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
+          <div>
+            <span className="label mb-2 block">Substats revealed</span>
+            <div className="seg" role="group" aria-label="Number of substats revealed">
+              {ROLL_OPTIONS.map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  className="seg__item"
+                  data-active={rolls === n}
+                  aria-pressed={rolls === n}
+                  onClick={() => changeRolls(n)}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          <div className="ml-auto text-right">
+            <div className="text-3xl font-bold leading-none tabular-nums text-text">
+              {selectedCount}
+              <span className="text-base font-semibold text-faint">/{rolls}</span>
+            </div>
+            <div className="mt-1 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-faint">
+              desired
+            </div>
+          </div>
+        </div>
+        <p className="mt-4 text-sm text-muted">
+          Pick up to <span className="font-semibold text-text">{rolls}</span> substats to see the
+          odds they all appear within {rolls} roll{rolls > 1 ? 's' : ''}. Drag a bar to accept a
+          specific roll range.
+        </p>
+      </section>
+
+      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
         {PROB_SUBSTATS.map((s) => (
           <SubstatCard
             key={s.id}
             substat={s}
+            color={COLOR_MAP[s.color] ?? '#8892a0'}
             selected={!!selected[s.id]}
             maxed={!selected[s.id] && isMaxed}
             range={valueRanges[s.id] || { min: 0, max: s.values.length - 1 }}
@@ -98,6 +153,7 @@ export function Probability() {
 
 function SubstatCard({
   substat,
+  color,
   selected,
   maxed,
   range,
@@ -105,6 +161,7 @@ function SubstatCard({
   onRangeChange,
 }: {
   substat: ProbSubstat
+  color: string
   selected: boolean
   maxed: boolean
   range: ValueRange
@@ -113,19 +170,35 @@ function SubstatCard({
 }) {
   return (
     <div
-      onClick={onToggle}
-      className={`rounded-xl border p-4 transition-all ${
-        maxed
-          ? 'cursor-default border-border bg-surface opacity-50'
-          : selected
-            ? 'cursor-pointer border-white/70 bg-gradient-to-br from-white/10 to-transparent shadow-[0_0_18px_rgba(255,255,255,0.08)]'
-            : 'cursor-pointer border-border bg-surface hover:border-white/40 hover:bg-surface-2'
-      }`}
+      role="checkbox"
+      aria-checked={selected}
+      aria-label={substat.name}
+      tabIndex={maxed ? -1 : 0}
+      onClick={maxed ? undefined : onToggle}
+      onKeyDown={(e) => {
+        if (maxed) return
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault()
+          onToggle()
+        }
+      }}
+      data-selected={selected}
+      data-maxed={maxed}
+      className="substat-card"
+      style={accentStyle(color)}
     >
-      <div className="mb-3 flex items-center justify-center gap-2">
-        <span className="h-2.5 w-2.5 rounded-full" style={{ background: COLOR_MAP[substat.color] }} />
-        <span className={`text-base font-medium ${selected ? 'text-text' : 'text-muted'}`}>
+      <div className="mb-3.5 flex items-center gap-2">
+        <span
+          className="h-2.5 w-2.5 shrink-0 rounded-full"
+          style={{ background: color, boxShadow: selected ? `0 0 10px ${color}` : undefined }}
+        />
+        <span
+          className={`truncate text-sm font-semibold ${selected ? 'text-text' : 'text-muted'}`}
+        >
           {substat.name}
+        </span>
+        <span className="substat-card__select ml-auto" aria-hidden="true">
+          {selected && <IconCheck className="h-3 w-3 text-[#101014]" />}
         </span>
       </div>
 
@@ -216,39 +289,33 @@ function RangeSlider({
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className={disabled ? 'pointer-events-none opacity-50' : ''}
+      className={disabled ? 'pointer-events-none opacity-40' : ''}
     >
-      <div
-        ref={trackRef}
-        onPointerDown={onPointerDown}
-        className="relative h-4 cursor-grab touch-none select-none"
-      >
-        <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-bg" />
+      <div ref={trackRef} onPointerDown={onPointerDown} className="rng">
+        <div className="rng__track" />
         <div
-          className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-info"
+          className="rng__fill"
           style={{ left: pct(minIdx), width: `calc(${pct(maxIdx)} - ${pct(minIdx)})` }}
         />
-        <div
-          className="pointer-events-none absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-info shadow-[0_0_8px_rgba(59,130,246,0.5)]"
-          style={{ left: pct(minIdx) }}
-        />
-        <div
-          className="pointer-events-none absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-info shadow-[0_0_8px_rgba(59,130,246,0.5)]"
-          style={{ left: pct(maxIdx) }}
-        />
+        <div className="rng__thumb" style={{ left: pct(minIdx) }} />
+        <div className="rng__thumb" style={{ left: pct(maxIdx) }} />
       </div>
 
-      <div className="pointer-events-none mt-1.5 flex justify-between">
-        {values.map((v, i) => (
-          <span
-            key={i}
-            className={`text-[0.62rem] tabular-nums leading-none transition-colors ${
-              i >= minIdx && i <= maxIdx ? 'font-semibold text-text' : 'text-faint/70'
-            }`}
-          >
-            {format(v)}
-          </span>
-        ))}
+      <div className="pointer-events-none mt-2 flex justify-between">
+        {values.map((v, i) => {
+          const active = i >= minIdx && i <= maxIdx
+          return (
+            <span
+              key={i}
+              className={`text-[0.6rem] tabular-nums leading-none transition-colors ${
+                active ? 'font-semibold' : 'text-faint/60'
+              }`}
+              style={active ? { color: 'var(--accent)' } : undefined}
+            >
+              {format(v)}
+            </span>
+          )
+        })}
       </div>
     </div>
   )
@@ -257,9 +324,9 @@ function RangeSlider({
 function ResultsPanel({ result }: { result: ReturnType<typeof calcProbability> }) {
   if (!result) {
     return (
-      <div className="rounded-xl border border-border bg-surface p-6 text-center">
-        <h2 className="mb-3 text-xs uppercase tracking-widest text-muted">Results</h2>
-        <p className="py-8 text-sm text-muted">Click a substat to see probability</p>
+      <div className="rounded-2xl border border-border bg-surface p-6 text-center">
+        <h2 className="mb-3 text-center text-xs uppercase tracking-widest text-muted">Results</h2>
+        <p className="py-8 text-sm text-muted">Select a substat to see the probability</p>
       </div>
     )
   }
@@ -270,22 +337,28 @@ function ResultsPanel({ result }: { result: ReturnType<typeof calcProbability> }
   const cls = pctClass(p)
 
   return (
-    <div className="rounded-xl border border-border bg-surface p-5">
+    <div className="rounded-2xl border border-border bg-surface p-5">
       <h2 className="mb-3 text-center text-xs uppercase tracking-widest text-muted">Results</h2>
       <div className="fade-in text-center">
         <div className="text-4xl font-extrabold tabular-nums" style={{ color: RESULT_COLORS[cls] }}>
           {pct}
         </div>
         <div className="mt-0.5 text-sm font-semibold text-muted">{oneIn}</div>
+        <div className="mt-1 text-[0.7rem] uppercase tracking-[0.14em] text-faint">
+          within {result.rolls} roll{result.rolls > 1 ? 's' : ''}
+        </div>
 
         {result.wantIds.length > 0 && (
-          <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5">
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5">
             {result.wantIds.map((id) => {
               const s = substatById(id)
               if (!s) return null
               return (
                 <span key={id} className="chip border-border bg-surface-2 text-text">
-                  <span className="h-2 w-2 rounded-full" style={{ background: COLOR_MAP[s.color] }} />
+                  <span
+                    className="h-2 w-2 rounded-full"
+                    style={{ background: COLOR_MAP[s.color] ?? '#8892a0' }}
+                  />
                   {s.name}
                 </span>
               )
@@ -295,20 +368,25 @@ function ResultsPanel({ result }: { result: ReturnType<typeof calcProbability> }
 
         {result.impossible && (
           <p className="mt-1.5 text-xs font-semibold" style={{ color: 'var(--color-danger)' }}>
-            Too many substats selected for {SLOTS} slots
+            Can&rsquo;t fit {result.wantIds.length} substats into {result.rolls} roll
+            {result.rolls > 1 ? 's' : ''}
           </p>
         )}
 
         {!result.impossible && (
-          <div className="mx-auto mt-2.5 max-w-lg border-t border-border pt-2">
-            <h3 className="mb-1 text-[0.65rem] uppercase tracking-wider text-muted">Breakdown</h3>
+          <div className="mx-auto mt-4 max-w-lg border-t border-border pt-3">
+            <h3 className="mb-2 text-[0.65rem] uppercase tracking-wider text-muted">Breakdown</h3>
             <table className="w-full border-collapse text-xs">
               <thead>
                 <tr>
-                  <th className="border-b border-border px-1 py-0.5 text-center font-semibold uppercase tracking-wide text-muted">Substat</th>
-                  <th className="border-b border-border px-1 py-0.5 text-center font-semibold uppercase tracking-wide text-muted">Roll</th>
-                  <th className="border-b border-border px-1 py-0.5 text-center font-semibold uppercase tracking-wide text-muted">Value</th>
-                  <th className="border-b border-border px-1 py-0.5 text-center font-semibold uppercase tracking-wide text-muted">Total</th>
+                  {['Substat', 'Appears', 'Value', 'Result'].map((h) => (
+                    <th
+                      key={h}
+                      className="border-b border-border px-1 py-1 text-center font-semibold uppercase tracking-wide text-muted"
+                    >
+                      {h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -317,18 +395,24 @@ function ResultsPanel({ result }: { result: ReturnType<typeof calcProbability> }
                   const name = substatById(id)?.name ?? id
                   return (
                     <tr key={id} className="border-b border-border/40">
-                      <td className="px-1 py-0.5 text-center">{name}</td>
-                      <td className="px-1 py-0.5 text-center tabular-nums">{formatPct(d.indivProb)}</td>
-                      <td className="px-1 py-0.5 text-center tabular-nums">{formatPct(d.valueProb)}</td>
-                      <td className="px-1 py-0.5 text-center tabular-nums">{formatPct(d.indivProb * d.valueProb)}</td>
+                      <td className="px-1 py-1 text-center">{name}</td>
+                      <td className="px-1 py-1 text-center tabular-nums">{formatPct(d.indivProb)}</td>
+                      <td className="px-1 py-1 text-center tabular-nums">{formatPct(d.valueProb)}</td>
+                      <td className="px-1 py-1 text-center tabular-nums">
+                        {formatPct(d.indivProb * d.valueProb)}
+                      </td>
                     </tr>
                   )
                 })}
                 <tr className="border-t-2 border-border font-bold text-text">
-                  <td className="px-1 py-1 text-center">Combined</td>
-                  <td className="px-1 py-1 text-center tabular-nums">{formatPct(result.basicProb)}</td>
-                  <td className="px-1 py-1 text-center tabular-nums">{formatPct(result.valueFactor)}</td>
-                  <td className="px-1 py-1 text-center tabular-nums">{pct}</td>
+                  <td className="px-1 py-1.5 text-center">Combined</td>
+                  <td className="px-1 py-1.5 text-center tabular-nums">
+                    {formatPct(result.basicProb)}
+                  </td>
+                  <td className="px-1 py-1.5 text-center tabular-nums">
+                    {formatPct(result.valueFactor)}
+                  </td>
+                  <td className="px-1 py-1.5 text-center tabular-nums">{pct}</td>
                 </tr>
               </tbody>
             </table>

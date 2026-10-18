@@ -112,7 +112,7 @@ export function XpTuners() {
           {barSegments.map((seg) => (
             <div key={seg.label} className="mb-2 flex items-center gap-2.5">
               <span className="w-[100px] shrink-0 text-right text-xs text-muted">{seg.label}</span>
-              <div className="h-2.5 flex-1 overflow-hidden rounded border border-border bg-bg">
+              <div className="h-2.5 flex-1 overflow-hidden rounded border border-border bg-surface-3">
                 <div
                   className="h-full rounded"
                   style={{ width: `${Math.min(seg.width, 100)}%`, background: BAR_COLORS[seg.fill], transition: 'width .3s', minWidth: 2 }}
@@ -156,9 +156,9 @@ function CheckpointSlider({ value, onChange }: { value: number; onChange: (i: nu
   return (
     <div>
       <div ref={trackRef} onPointerDown={onPointerDown} className="relative h-4 cursor-pointer select-none touch-none">
-        <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-bg" />
+        <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-surface-3" />
         <div
-          className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-info shadow-[0_0_8px_rgba(59,130,246,0.5)]"
+          className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[color:var(--color-text)] bg-info shadow-[0_0_8px_rgba(59,130,246,0.5)]"
           style={{ left: pct(value) }}
         />
       </div>
@@ -198,7 +198,8 @@ function NumberField({
 }) {
   return (
     <div className="min-w-[140px] flex-1">
-      <label className="label" style={color ? { color } : undefined}>
+      <label className="label flex items-center gap-1.5">
+        {color && <span className="h-2 w-2 rounded-full" style={{ background: color }} />}
         {label}
       </label>
       <input

@@ -250,7 +250,7 @@ export function Comparison() {
         </select>
         <button
           className={`btn ${weightsOpen ? 'active' : ''}`}
-          style={weightsOpen ? { background: 'var(--color-gold)', color: '#1e1e20', borderColor: 'var(--color-gold)', fontWeight: 600 } : undefined}
+          style={weightsOpen ? { background: 'var(--color-gold)', color: 'var(--color-on-gold)', borderColor: 'var(--color-gold)', fontWeight: 600 } : undefined}
           onClick={() => setWeightsOpen((v) => !v)}
         >
           Substat Value
@@ -264,7 +264,7 @@ export function Comparison() {
       <div className="flex items-start gap-4">
         {weightsOpen && (
           <aside className="sticky top-[4.5rem] w-64 shrink-0 rounded-xl border border-border bg-surface p-3.5">
-            <div className="mb-2 flex items-center justify-between border-b border-white/5 pb-2">
+            <div className="mb-2 flex items-center justify-between border-b border-border/60 pb-2">
               <h3 className="text-xs uppercase tracking-wider text-muted">Substat Value</h3>
               <button
                 className="text-muted hover:text-danger"
@@ -301,7 +301,7 @@ export function Comparison() {
               ))}
             </div>
 
-            <div className="mt-3.5 border-t border-white/5 pt-2.5">
+            <div className="mt-3.5 border-t border-border/60 pt-2.5">
               <h4 className="mb-2 text-xs uppercase tracking-wider text-muted">Value Distribution</h4>
               <div className="flex flex-col gap-1">
                 {chartEntries.entries.map((entry) => {
@@ -312,7 +312,7 @@ export function Comparison() {
                   return (
                     <div key={entry.name} className="flex h-4 items-center gap-2">
                       <span className="w-[60px] shrink-0 text-right text-xs text-muted">{getDisplay(entry.name)}</span>
-                      <div className="h-2 flex-1 overflow-hidden rounded bg-white/5">
+                      <div className="h-2 flex-1 overflow-hidden rounded bg-surface-3">
                         <div
                           className="h-full rounded"
                           style={{ width: `${pct}%`, background: colorForBar, transition: 'width .4s', minWidth: 2 }}
@@ -363,7 +363,7 @@ export function Comparison() {
                   {['#', 'Echo', 'Value', 'Substats', 'Best Roll', 'Worst Roll'].map((h) => (
                     <th
                       key={h}
-                      className="border-b border-white/5 px-2 py-1.5 text-left font-medium text-muted"
+                      className="border-b border-border/60 px-2 py-1.5 text-left font-medium text-muted"
                     >
                       {h}
                     </th>
@@ -390,7 +390,7 @@ export function Comparison() {
                   }
                   const isBest = rank === 0
                   return (
-                    <tr key={echo.id} className={`border-b border-white/5 ${isBest ? 'bg-gold/5' : ''}`}>
+                    <tr key={echo.id} className={`border-b border-border/60 ${isBest ? 'bg-gold/5' : ''}`}>
                       <td className="px-2 py-1.5">{rank + 1}</td>
                       <td className="px-2 py-1.5">{echo.name}</td>
                       <td className="px-2 py-1.5 font-semibold text-gold">{score.toFixed(2)}%</td>
@@ -453,7 +453,7 @@ function EchoCard({
     <div
       className={`card flex flex-col ${isBest ? 'border-gold shadow-[0_0_20px_rgba(201,165,60,0.15)]' : ''}`}
     >
-      <div className="mb-3 flex items-center justify-between border-b border-white/5 pb-2.5">
+      <div className="mb-3 flex items-center justify-between border-b border-border/60 pb-2.5">
         <div className="flex items-center gap-2">
           {isBest && <span className="text-lg text-gold">👑</span>}
           <input
@@ -477,8 +477,8 @@ function EchoCard({
       {echo.slots.map((slot, i) => (
         <div
           key={i}
-          className={`mb-2.5 rounded-lg border bg-white/[0.02] p-2.5 transition-colors ${
-            slot.statName ? 'border-gold/15' : 'border-white/5'
+          className={`mb-2.5 rounded-lg border p-2.5 transition-colors ${
+            slot.statName ? 'border-gold/25 bg-surface-2/60' : 'border-border/60 bg-surface-2/40'
           }`}
         >
           <div className="mb-1.5 flex items-center gap-1.5">
@@ -525,18 +525,17 @@ function EchoCard({
                         key={vi}
                         className={`relative rounded border px-2.5 py-1 text-xs font-medium transition-all ${
                           isSelected
-                            ? 'border-gold bg-gold font-bold text-bg shadow-[0_0_8px_rgba(201,165,60,0.3)]'
+                            ? 'border-gold bg-gold font-bold text-on-gold shadow-[0_0_8px_rgba(201,165,60,0.3)]'
                             : isMedian
-                              ? 'border-gold/30 text-gold-dim hover:border-white/30 hover:bg-white/5'
-                              : 'border-white/10 bg-black/30 text-muted hover:border-white/30 hover:text-text'
+                              ? 'border-gold/30 text-gold-dim hover:border-border-bright hover:bg-surface-3'
+                              : 'border-border bg-surface-2 text-muted hover:border-border-bright hover:text-text'
                         }`}
-                        style={isSelected && isMedian ? { background: 'var(--color-gold)', color: '#1e1e20' } : undefined}
                         onClick={() => onSetValue(i, vi)}
                         title={`Roll chance: ${chance}`}
                       >
                         {def.format(val)}
                         {isMedian && (
-                          <span className="absolute -right-1.5 -top-1.5 flex h-3 w-3 items-center justify-center rounded-full bg-gold text-[0.5rem] font-bold text-bg">
+                          <span className="absolute -right-1.5 -top-1.5 flex h-3 w-3 items-center justify-center rounded-full bg-gold text-[0.5rem] font-bold text-on-gold">
                             M
                           </span>
                         )}
@@ -546,7 +545,7 @@ function EchoCard({
                 </div>
                 <div className="mt-1 flex items-center gap-2 text-xs">
                   <span style={{ color: tierColor }}>{tierLabel}</span>
-                  <div className="h-1 flex-1 overflow-hidden rounded bg-white/5">
+                  <div className="h-1 flex-1 overflow-hidden rounded bg-surface-3">
                     <div
                       className="h-full rounded transition-all"
                       style={{ width: `${quality}%`, background: qColor }}
@@ -563,12 +562,12 @@ function EchoCard({
       ))}
 
       {score > 0 && contributions.length > 0 && (
-        <div className="mt-1 border-t border-white/5 pt-2">
+        <div className="mt-1 border-t border-border/60 pt-2">
           <div className="mb-1.5 text-xs uppercase tracking-wider text-muted">Value Breakdown</div>
           {contributions.map((c) => (
             <div key={c.name} className="flex items-center gap-2 py-0.5">
               <span className="min-w-[60px] shrink-0 text-xs text-text">{getDisplay(c.name)}</span>
-              <div className="h-[5px] flex-1 overflow-hidden rounded bg-white/5">
+              <div className="h-[5px] flex-1 overflow-hidden rounded bg-surface-3">
                 <div
                   className="h-full rounded bg-gold opacity-70 transition-all"
                   style={{ width: `${(c.value / maxContrib) * 100}%` }}
@@ -582,7 +581,7 @@ function EchoCard({
         </div>
       )}
 
-      <div className="mt-auto flex items-center justify-between border-t border-white/5 pt-3">
+      <div className="mt-auto flex items-center justify-between border-t border-border/60 pt-3">
         <div className="flex items-center gap-2.5">
           <span className="text-xs uppercase tracking-wider text-muted">Echo Value</span>
           <span

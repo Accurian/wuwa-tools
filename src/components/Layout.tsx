@@ -4,6 +4,7 @@ import { SiteHeader } from './SiteHeader'
 import { SiteFooter } from './SiteFooter'
 import { Sidebar } from './Sidebar'
 import { getPageTitle } from '../lib/paths'
+import type { RouteKey } from '../lib/router'
 
 const SIDEBAR_KEY = 'wuwa:sidebar-open'
 
@@ -24,7 +25,7 @@ export function Layout({
   active,
   children,
 }: {
-  active: string
+  active: RouteKey
   children: ReactNode
 }) {
   const [open, setOpen] = useState(initialOpen)

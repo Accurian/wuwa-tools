@@ -42,7 +42,9 @@ export const PROB_SUBSTATS: ProbSubstat[] = DEF.map((d) => {
 })
 
 export const POOL = 13
+/** Maximum substats an Echo can reveal (at +5/+10/+15/+20/+25). */
 export const SLOTS = 5
+export const MIN_ROLLS = 1
 
 export interface ValueRange {
   min: number
@@ -54,6 +56,8 @@ export interface ProbResult {
   basicProb: number
   valueFactor: number
   wantIds: string[]
+  /** Number of rolls (revealed substats) this result was computed for. */
+  rolls: number
   indiv: Record<string, { indivProb: number; valueProb: number; range?: ValueRange }>
   impossible: boolean
 }
@@ -67,37 +71,65 @@ export function nCr(n: number, r: number): number {
   return res
 }
 
+/**
+ * Probability that every desired substat shows up within `rolls` revealed substats.
+ *
+ * Each reveal pulls a distinct stat from a pool of `POOL`, so the revealed set is a
+ * uniform `rolls`-subset of the pool. The chance a fixed set of `k` desired stats are
+ * all contained in that subset is `C(rolls, k) / C(POOL, k)` (which equals the classic
+ * `C(POOL-k, rolls-k) / C(POOL, rolls)` when `rolls === POOL`'s echo cap). Rolling fewer
+ * substats simply tightens the odds.
+ */
 export function calcProbability(
   selected: Record<string, boolean>,
   valueRanges: Record<string, ValueRange>,
+  rolls: number = SLOTS,
 ): ProbResult | null {
   const wantIds = Object.keys(selected).filter((k) => selected[k])
   const k = wantIds.length
   if (k === 0) return null
 
-  if (k > SLOTS) {
-    return { prob: 0, basicProb: 0, valueFactor: 0, wantIds, indiv: {}, impossible: true }
+  const n = Math.max(MIN_ROLLS, Math.min(SLOTS, Math.floor(rolls) || SLOTS))
+
+  if (k > n) {
+    return {
+      prob: 0,
+      basicProb: 0,
+      valueFactor: 0,
+      wantIds,
+      rolls: n,
+      indiv: {},
+      impossible: true,
+    }
   }
 
-  const basicProb = nCr(POOL - k, SLOTS - k) / nCr(POOL, SLOTS)
+  const basicProb = nCr(n, k) / nCr(POOL, k)
   let valueFactor = 1
   const indiv: ProbResult['indiv'] = {}
 
   for (const id of wantIds) {
     const s = PROB_SUBSTATS.find((x) => x.id === id)
     if (!s || !s.values) {
-      indiv[id] = { indivProb: 1 / POOL, valueProb: 1 }
+      indiv[id] = { indivProb: n / POOL, valueProb: 1 }
       continue
     }
     const r = valueRanges[id] || { min: 0, max: s.values.length - 1 }
     let sum = 0
     for (let i = r.min; i <= r.max; i++) sum += s.probs[i]
     const vp = sum / 100
-    indiv[id] = { indivProb: 1 / POOL, valueProb: vp, range: r }
+    indiv[id] = { indivProb: n / POOL, valueProb: vp, range: r }
     valueFactor *= vp
   }
 
-  return { prob: basicProb * valueFactor, basicProb, valueFactor, wantIds, indiv, impossible: false }
+  return {
+    prob: basicProb * valueFactor,
+    basicProb,
+    valueFactor,
+    wantIds,
+    rolls: n,
+    indiv,
+    impossible: false,
+  }
 }
 
 export function formatPct(v: number): string {
