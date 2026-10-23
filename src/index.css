@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@source not "../tools";
+
 /* ------------------------------------------------------------------ *
  * Design tokens
  * Dark is the default (set in @theme -> :root). Light overrides the

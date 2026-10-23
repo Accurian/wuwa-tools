@@ -318,7 +318,7 @@ export const PRESETS: Record<string, Preset> = {
     weights: { 'Crit. DMG': 4.93, 'Crit. Rate': 5.7, 'ATK%': 2.45, ATK: 1.18, 'Heavy ATK DMG Bonus': 2.45 },
   },
   'iuno-mdps': {
-    label: 'Iuno (MDPS)',
+    label: 'Iuno (Main DPS)',
     weights: { 'Crit. DMG': 4.41, 'Crit. Rate': 6.23, 'ATK%': 3.04, ATK: 1.62, 'Basic ATK DMG Bonus': 0.17, 'Res. Skill DMG Bonus': 0.55, 'Res. Liberation DMG Bonus': 2.3 },
   },
   carlotta: {
@@ -356,5 +356,13 @@ export const PRESETS: Record<string, Preset> = {
   iuno: {
     label: 'Iuno',
     weights: { 'Crit. DMG': 6.29, 'Crit. Rate': 5.4, 'ATK%': 2.99, ATK: 1.68, 'Res. Skill DMG Bonus': 0.3, 'Res. Liberation DMG Bonus': 2.8 },
+  },
+  'suoming-sub-dps': {
+    label: 'Suoming (Sub-DPS)',
+    weights: { 'Crit. DMG': 6.19, 'Crit. Rate': 5.05, 'ATK%': 2.66, ATK: 1.23, 'Basic ATK DMG Bonus': 1.91, 'Res. Skill DMG Bonus': 0.06, 'Res. Liberation DMG Bonus': 0.58 },
+  },
+  'suoming-main-dps': {
+    label: 'Suoming (Main DPS)',
+    weights: { 'Crit. DMG': 4.76, 'Crit. Rate': 4.59, 'ATK%': 2.33, ATK: 1.09, 'Basic ATK DMG Bonus': 2.0, 'Res. Skill DMG Bonus': 0.03, 'Res. Liberation DMG Bonus': 0.27 },
   },
 }

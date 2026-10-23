@@ -3,3 +3,4 @@ dist
 .npm-cache
 *.local
 .DS_Store
+tools/
